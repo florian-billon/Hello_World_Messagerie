@@ -1,0 +1,15 @@
+# Next/Node
+frontend/node_modules/
+frontend/.next/
+frontend/.turbo/
+frontend/out/
+frontend/.vercel/
+
+# Rust
+backend/target/
+
+# OS/editor
+.DS_Store
+*.swp
+*.swo
+*~
