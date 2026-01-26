@@ -5,16 +5,11 @@ export const metadata = {
   description: "Real Time Messaging Platform",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body>
-        <div className="app">
-          <div className="background" />
+      <body className="min-h-screen bg-[url('/background.png')] bg-cover bg-center bg-no-repeat">
+        <div className="min-h-screen bg-black/50">
           {children}
         </div>
       </body>
