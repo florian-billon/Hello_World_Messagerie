@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,6 +10,25 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
+      <head>
+        <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
+        <Script id="tailwind-config" strategy="beforeInteractive">
+          {`
+            tailwind.config = {
+              theme: {
+                extend: {
+                  colors: {
+                    cyberCyan: '#4fdfff',
+                    cyberMint: '#5df2c6',
+                    cyberRed: '#a00000',
+                    cyberRedHover: '#c00000',
+                  }
+                }
+              }
+            }
+          `}
+        </Script>
+      </head>
       <body className="antialiased">
         <div className="relative w-screen h-screen">
           {/* BACKGROUND COMPONENT */}

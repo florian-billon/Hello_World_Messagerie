@@ -1,4 +1,12 @@
 @import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@theme {
+  --color-cyberCyan: #4fdfff;
+  --color-cyberMint: #5df2c6;
+  --color-cyberRed: #a00000;
+  --color-cyberRedHover: #c00000;
+}
 
 @layer base {
   html, body {
