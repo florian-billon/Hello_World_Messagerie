@@ -13,19 +13,22 @@ hello-world/
 │   └── Cargo.lock
 ├── frontend/         # Application Next.js
 │   ├── app/
+│   │   ├── auth/         # Page d'authentification
+│   │   │   └── page.tsx
 │   │   ├── components/   # Composants React
 │   │   │   ├── Sidebar.tsx
 │   │   │   ├── Chat.tsx
 │   │   │   ├── MembersSidebar.tsx
 │   │   │   └── index.ts
 │   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   └── globals.css
+│   │   └── page.tsx
 │   ├── public/       # Assets statiques
 │   ├── package.json
 │   ├── tsconfig.json
 │   ├── next.config.ts
-│   └── postcss.config.mjs
+│   ├── tailwind.config.ts
+│   ├── postcss.config.ts
+│   └── eslint.config.ts
 └── README.md
 ```
 
