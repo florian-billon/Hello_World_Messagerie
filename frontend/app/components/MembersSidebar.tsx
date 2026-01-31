@@ -1,6 +1,6 @@
 export function MembersSidebar() {
   return (
-    <aside className="w-[260px] p-5 text-white bg-panelBg flex flex-col border-l-2 border-cyberCyan">
+    <aside className="w-[260px] p-5 text-white bg-[rgba(0,0,0,0.45)] flex flex-col border-l-2 border-cyberCyan">
       {/* Members section */}
       <h3 className="text-xs tracking-wider opacity-75 mb-2">MEMBERS</h3>
       <ul className="list-none">

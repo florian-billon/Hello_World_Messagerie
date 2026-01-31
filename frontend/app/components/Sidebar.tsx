@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function Sidebar() {
   return (
-    <aside className="w-[260px] p-5 text-white bg-panelBg flex flex-col border-r-2 border-cyberCyan">
+    <aside className="w-[260px] p-5 text-white bg-[rgba(0,0,0,0.45)] flex flex-col border-r-2 border-cyberCyan">
       {/* Logo */}
       <Image
         src="/logo.png"

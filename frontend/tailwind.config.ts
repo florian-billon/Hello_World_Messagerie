@@ -12,6 +12,8 @@ const config: Config = {
         cyberMint: "#5df2c6",
         cyberRed: "#a00000",
         cyberRedHover: "#c00000",
+      },
+      backgroundColor: {
         panelBg: "rgba(0, 0, 0, 0.45)",
       },
       keyframes: {
