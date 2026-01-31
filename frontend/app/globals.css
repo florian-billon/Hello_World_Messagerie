@@ -1,23 +1,17 @@
 @import "tailwindcss";
-@config "../tailwind.config.ts";
-
-@theme {
-  --color-cyberCyan: #4fdfff;
-  --color-cyberMint: #5df2c6;
-  --color-cyberRed: #a00000;
-  --color-cyberRedHover: #c00000;
-}
 
 @layer base {
   html, body {
+    /* Si @apply pose encore problème ici, utilise du CSS standard pour le reset */
     width: 100%;
     height: 100%;
-    font-weight: 700;
+    font-weight: 700; /* Équivalent font-bold */
     overflow: hidden;
     color: black;
     font-family: Arial, Helvetica, sans-serif;
   }
 
+  /* Scrollbar personnalisée sans @apply pour éviter les erreurs de build */
   ::-webkit-scrollbar {
     width: 6px;
   }
