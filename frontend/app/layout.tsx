@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "tailwindcss/tailwind.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "HELLO WORLD",
