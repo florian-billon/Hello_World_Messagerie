@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function Sidebar() {
   return (
-    <aside className="w-[260px] p-5 text-white bg-[var(--panel-bg)] flex flex-col border-r-2 border-[var(--cyan)]">
+    <aside className="w-[260px] p-5 text-white bg-panelBg flex flex-col border-r-2 border-cyberCyan">
       {/* Logo */}
       <Image
         src="/logo.png"
@@ -14,7 +14,7 @@ export function Sidebar() {
       />
 
       {/* New Message Button */}
-      <button className="px-4 py-2.5 bg-[var(--red-primary)] border-2 border-[var(--cyan)] text-white cursor-pointer rounded text-sm transition-all duration-200 hover:bg-[var(--red-hover)] hover:shadow-[0_0_8px_rgba(79,223,255,0.6)]">
+      <button className="px-4 py-2.5 bg-cyberRed border-2 border-cyberCyan text-white cursor-pointer rounded text-sm transition-all duration-200 hover:bg-cyberRedHover hover:shadow-[0_0_8px_rgba(79,223,255,0.6)]">
         + NEW MESSAGE
       </button>
 
@@ -31,10 +31,10 @@ export function Sidebar() {
 
       {/* Bottom Buttons - pushed to bottom with mt-auto */}
       <div className="mt-auto flex flex-col gap-2.5">
-        <button className="px-4 py-2.5 bg-[var(--red-primary)] border-2 border-[var(--cyan)] text-white cursor-pointer rounded text-sm transition-all duration-200 hover:bg-[var(--red-hover)] hover:shadow-[0_0_8px_rgba(79,223,255,0.6)]">
+        <button className="px-4 py-2.5 bg-cyberRed border-2 border-cyberCyan text-white cursor-pointer rounded text-sm transition-all duration-200 hover:bg-cyberRedHover hover:shadow-[0_0_8px_rgba(79,223,255,0.6)]">
           JOIN SERVER
         </button>
-        <button className="px-4 py-2.5 bg-[var(--red-primary)] border-2 border-[var(--cyan)] text-white cursor-pointer rounded text-sm transition-all duration-200 hover:bg-[var(--red-hover)] hover:shadow-[0_0_8px_rgba(79,223,255,0.6)]">
+        <button className="px-4 py-2.5 bg-cyberRed border-2 border-cyberCyan text-white cursor-pointer rounded text-sm transition-all duration-200 hover:bg-cyberRedHover hover:shadow-[0_0_8px_rgba(79,223,255,0.6)]">
           CREATE SERVER
         </button>
       </div>

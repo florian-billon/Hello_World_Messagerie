@@ -12,6 +12,16 @@ const config: Config = {
         cyberMint: "#5df2c6",
         cyberRed: "#a00000",
         cyberRedHover: "#c00000",
+        panelBg: "rgba(0, 0, 0, 0.45)",
+      },
+      keyframes: {
+        fadeIn: {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-in": "fadeIn 0.5s ease",
       },
     },
   },

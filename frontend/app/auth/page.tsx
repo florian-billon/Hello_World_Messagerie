@@ -1,5 +1,4 @@
 import Image from "next/image";
-import "./global.css";
 
 export default function AuthPage() {
   return (
@@ -11,7 +10,7 @@ export default function AuthPage() {
       <div className="relative z-10 flex w-full h-full">
         
         {/* LEFT SIDEBAR */}
-        <aside className="w-[260px] p-5 bg-white/20 border-r-2 border-[#4fdfff] flex flex-col shrink-0">
+        <aside className="w-[260px] p-5 bg-white/20 border-r-2 border-cyberCyan flex flex-col shrink-0">
           <Image
             src="/logo.png"
             alt="Hello World logo"
@@ -98,7 +97,7 @@ export default function AuthPage() {
         </div>
 
         {/* RIGHT SIDEBAR */}
-        <aside className="w-[260px] p-5 bg-white/20 border-l-2 border-[#4fdfff] shrink-0" />
+        <aside className="w-[260px] p-5 bg-white/20 border-l-2 border-cyberCyan shrink-0" />
       </div>
     </main>
   );

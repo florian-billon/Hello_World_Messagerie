@@ -1,6 +1,6 @@
 export function MembersSidebar() {
   return (
-    <aside className="w-[260px] p-5 text-white bg-[var(--panel-bg)] flex flex-col border-l-2 border-[var(--cyan)]">
+    <aside className="w-[260px] p-5 text-white bg-panelBg flex flex-col border-l-2 border-cyberCyan">
       {/* Members section */}
       <h3 className="text-xs tracking-wider opacity-75 mb-2">MEMBERS</h3>
       <ul className="list-none">
@@ -10,7 +10,7 @@ export function MembersSidebar() {
 
       {/* Contact section */}
       <h3 className="text-xs tracking-wider opacity-75 mt-4 mb-2">CONTACT</h3>
-      <button className="px-4 py-2.5 bg-[var(--red-primary)] border-2 border-[var(--cyan)] text-white cursor-pointer rounded text-sm transition-all duration-200 hover:bg-[var(--red-hover)] hover:shadow-[0_0_8px_rgba(79,223,255,0.6)]">
+      <button className="px-4 py-2.5 bg-cyberRed border-2 border-cyberCyan text-white cursor-pointer rounded text-sm transition-all duration-200 hover:bg-cyberRedHover hover:shadow-[0_0_8px_rgba(79,223,255,0.6)]">
         Details
       </button>
     </aside>
