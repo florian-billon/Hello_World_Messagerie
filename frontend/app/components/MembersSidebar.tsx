@@ -16,4 +16,3 @@ export function MembersSidebar() {
     </aside>
   );
 }
-

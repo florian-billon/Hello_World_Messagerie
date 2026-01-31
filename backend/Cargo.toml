@@ -1,5 +1,5 @@
 [package]
-name = "axum-endpoint"
+name = "hello-world-backend"
 version = "0.1.0"
 edition = "2021"
 

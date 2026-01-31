@@ -1,15 +1,31 @@
-# Next/Node
+# Next.js / Node.js
 frontend/node_modules/
 frontend/.next/
 frontend/.turbo/
 frontend/out/
 frontend/.vercel/
+frontend/.env*.local
+frontend/dist/
 
 # Rust
 backend/target/
+backend/**/*.rs.bk
 
-# OS/editor
-.DS_Store
+# IDE / Editor
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local

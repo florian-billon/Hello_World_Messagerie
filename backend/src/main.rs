@@ -150,8 +150,13 @@ async fn main() {
         .layer(cors)
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3001")
+        .await
+        .expect("Failed to bind to address 0.0.0.0:3001");
+    
     println!("🚀 Backend running on http://localhost:3001");
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .await
+        .expect("Server failed to start");
 }
