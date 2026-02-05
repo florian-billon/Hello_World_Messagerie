@@ -8,20 +8,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
-      <body>
-        {/* Background avec image et overlay */}
-        <div className="fixed inset-0 z-0">
+    <html lang="fr" className="w-full h-full overflow-hidden">
+      <body className="w-full h-full font-bold text-white font-[Arial,Helvetica,sans-serif] antialiased [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#4fdfff] [&::-webkit-scrollbar-thumb]:rounded-sm [&::-webkit-scrollbar-track]:bg-black/20">
+        <div className="relative w-screen h-screen">
+          {/* Background avec overlay noir blurry - Style Original */}
           <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: "url('/background.png')" }}
+            className="fixed inset-0 bg-[url('/background.png')] bg-cover bg-center bg-no-repeat brightness-[0.6] contrast-[1.2] z-0" 
           />
-          <div className="absolute inset-0 bg-black/40" />
-        </div>
-        
-        {/* Contenu */}
-        <div className="relative z-10 w-full h-screen">
-          {children}
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1]" />
+          <div className="relative z-10 animate-fade-in">
+            {children}
+          </div>
         </div>
       </body>
     </html>

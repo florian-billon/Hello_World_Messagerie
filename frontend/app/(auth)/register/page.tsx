@@ -79,7 +79,7 @@ export default function RegisterPage() {
           </header>
 
           {/* AUTH FORM */}
-          <section className="w-[380px] p-10 bg-[rgba(20,20,20,0.85)] backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-[fadeIn_0.5s_ease]">
+          <section className="w-[380px] p-10 bg-[rgba(20,20,20,0.85)] backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] border-2 border-[#4fdfff] animate-[fadeIn_0.5s_ease]">
             <div className="text-center mb-8">
               <h3 className="text-white font-bold tracking-widest text-lg">INSCRIPTION</h3>
             </div>
@@ -99,7 +99,7 @@ export default function RegisterPage() {
                 maxLength={32}
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                className="p-3 rounded-lg border-none bg-[#1f1f1f] text-white placeholder-white/50 outline-none focus:ring-2 focus:ring-[#ff0000] transition-all"
+                className="p-3 rounded-lg border-2 border-[#4fdfff]/50 bg-[#1f1f1f] text-white placeholder-white/50 outline-none focus:border-[#4fdfff] focus:shadow-[0_0_10px_rgba(79,223,255,0.3)] transition-all"
               />
               <input
                 type="email"
@@ -107,7 +107,7 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="p-3 rounded-lg border-none bg-[#1f1f1f] text-white placeholder-white/50 outline-none focus:ring-2 focus:ring-[#ff0000] transition-all"
+                className="p-3 rounded-lg border-2 border-[#4fdfff]/50 bg-[#1f1f1f] text-white placeholder-white/50 outline-none focus:border-[#4fdfff] focus:shadow-[0_0_10px_rgba(79,223,255,0.3)] transition-all"
               />
               <div>
                 <input
@@ -117,7 +117,7 @@ export default function RegisterPage() {
                   minLength={8}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full p-3 rounded-lg border-none bg-[#1f1f1f] text-white placeholder-white/50 outline-none focus:ring-2 focus:ring-[#ff0000] transition-all"
+                  className="w-full p-3 rounded-lg border-2 border-[#4fdfff]/50 bg-[#1f1f1f] text-white placeholder-white/50 outline-none focus:border-[#4fdfff] focus:shadow-[0_0_10px_rgba(79,223,255,0.3)] transition-all"
                 />
                 <p className="text-white/40 text-xs mt-1">Minimum 8 caracteres</p>
               </div>
@@ -127,12 +127,12 @@ export default function RegisterPage() {
                 required
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="p-3 rounded-lg border-none bg-[#1f1f1f] text-white placeholder-white/50 outline-none focus:ring-2 focus:ring-[#ff0000] transition-all"
+                className="p-3 rounded-lg border-2 border-[#4fdfff]/50 bg-[#1f1f1f] text-white placeholder-white/50 outline-none focus:border-[#4fdfff] focus:shadow-[0_0_10px_rgba(79,223,255,0.3)] transition-all"
               />
               <button
                 type="submit"
                 disabled={isLoading}
-                className="mt-4 p-3 rounded-lg bg-[#ff0000] text-black font-bold cursor-pointer hover:bg-[#ff3333] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-4 p-3 rounded-lg bg-[#a00000] border-2 border-[#4fdfff] text-white font-bold cursor-pointer hover:bg-[#c00000] hover:shadow-[0_0_12px_rgba(79,223,255,0.8)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -149,7 +149,7 @@ export default function RegisterPage() {
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <Link href="/login" className="text-[#5df2c6] hover:underline">
+              <Link href="/login" className="text-[#4fdfff] hover:underline">
                 Deja un compte ? Se connecter
               </Link>
             </div>

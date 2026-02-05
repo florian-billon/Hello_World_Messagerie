@@ -2,13 +2,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { logout } from "@/lib/auth/actions";
-import { useServers, useChannels, useMessages, useMembers, useAuth} from "@/hooks";
+import { useServers, useChannels, useMessages, useMembers, useAuth } from "@/hooks";
 
 /**
- * Page principale - Layout Discord + Design Hacker Cyber
+ * Page principale - Design Original Cyberpunk
+ * Layout: LEFT SIDEBAR (260px) | CENTER CHAT | RIGHT SIDEBAR (260px)
  */
 export default function Home() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const {
     servers,
     selectedServer,
@@ -31,6 +32,9 @@ export default function Home() {
   const [newChannelName, setNewChannelName] = useState("");
   const [messageInput, setMessageInput] = useState("");
 
+  // Style des boutons action (rouge + bordure cyan)
+  const actionBtn = "w-full p-[10px] bg-[#a00000] border-2 border-[#4fdfff] text-white font-bold cursor-pointer rounded-lg text-[13px] uppercase transition-all duration-300 hover:bg-[#c00000] hover:shadow-[0_0_12px_rgba(79,223,255,0.8)] hover:scale-[1.02] active:scale-[0.98]";
+
   // Handlers
   const handleCreateServer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,15 +47,12 @@ export default function Home() {
   };
 
   const handleCreateChannel = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!newChannelName.trim()) return;
-  
-  // On ne passe QUE le nom. L'ID du serveur est déjà lié au hook.
-  await createChannel(newChannelName.trim()); 
-  
-  setNewChannelName("");
-  setShowCreateChannel(false);
-};
+    e.preventDefault();
+    if (!newChannelName.trim()) return;
+    await createChannel(newChannelName.trim());
+    setNewChannelName("");
+    setShowCreateChannel(false);
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,283 +63,266 @@ export default function Home() {
 
   if (serversLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <main className="flex w-full h-screen gap-2 p-2 items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-2 border-[var(--color-accent)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[var(--color-accent)] font-mono text-sm tracking-widest">
-            INITIALIZING...
+          <div className="w-16 h-16 border-2 border-[#4fdfff] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[#4fdfff] font-mono text-sm tracking-widest animate-pulse">
+            INITIALIZING SYSTEM...
           </p>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="flex w-full h-full">
-      {/* ========== SERVER SIDEBAR (Discord style) ========== */}
-      <aside className="w-[72px] bg-[rgba(0,0,0,0.9)] border-r border-[var(--color-border-dim)] flex flex-col items-center py-3 gap-2">
+    <main className="flex w-full h-screen gap-2 p-2">
+      
+      {/* ========== LEFT SIDEBAR - ORIGINAL STYLE ========== */}
+      <aside className="w-[260px] p-5 bg-[rgba(20,20,20,0.85)] backdrop-blur-[12px] flex flex-col border-r-2 border-[#4fdfff] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        
         {/* Logo */}
-        <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent)]/10 border border-[var(--color-accent)] flex items-center justify-center mb-2 hover:rounded-xl transition-all cursor-pointer group">
-          <Image
-            src="/logo.png"
-            alt="HW"
-            width={32}
-            height={32}
-            className="group-hover:scale-110 transition-transform"
-          />
-        </div>
+        <Image
+          src="/logo.png"
+          alt="Hello World logo"
+          width={150}
+          height={150}
+          className="max-w-full mb-5 drop-shadow-[0_0_10px_rgba(79,223,255,0.5)] mx-auto"
+        />
 
-        <div className="w-8 h-[2px] bg-[var(--color-border-dim)] rounded-full" />
-
-        {/* Server list */}
-        <div className="flex-1 w-full overflow-y-auto flex flex-col items-center gap-2 py-2">
-          {servers.map((server) => (
-            <button
-              key={server.id}
-              onClick={() => selectServer(server)}
-              className={`w-12 h-12 rounded-[24px] flex items-center justify-center text-lg font-bold transition-all duration-200 relative group ${
-                selectedServer?.id === server.id
-                  ? "bg-[var(--color-accent)] text-black rounded-xl"
-                  : "bg-[rgba(20,30,40,0.8)] text-[var(--color-accent)] hover:bg-[var(--color-accent)]/20 hover:rounded-xl"
-              }`}
-              title={server.name}
-            >
-              {server.name.charAt(0).toUpperCase()}
-              {/* Indicator */}
-              <span
-                className={`absolute left-0 w-1 bg-[var(--color-accent)] rounded-r transition-all ${
-                  selectedServer?.id === server.id ? "h-10" : "h-0 group-hover:h-5"
-                }`}
-              />
-            </button>
-          ))}
-        </div>
-
-        {/* Add server button */}
-        <button
-          onClick={() => setShowCreateServer(true)}
-          className="w-12 h-12 rounded-[24px] bg-[rgba(20,30,40,0.8)] border border-dashed border-[var(--color-border-dim)] flex items-center justify-center text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 hover:border-[var(--color-accent)] hover:rounded-xl transition-all group"
-          title="Creer un serveur"
-        >
-          <span className="text-2xl group-hover:rotate-90 transition-transform">+</span>
-        </button>
-
-        {/* Logout */}
-        <button
-          onClick={() => logout()}
-          className="w-12 h-12 rounded-[24px] bg-[rgba(40,10,10,0.8)] flex items-center justify-center text-[var(--color-accent-red)] hover:bg-[var(--color-accent-red)]/20 hover:rounded-xl transition-all mt-2"
-          title="Deconnexion"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </button>
-      </aside>
-
-      {/* ========== CHANNEL SIDEBAR ========== */}
-      {selectedServer ? (
-        <aside className="w-60 bg-[rgba(5,10,15,0.95)] border-r border-[var(--color-border-dim)] flex flex-col">
-          {/* Server header */}
-          <div className="h-12 px-4 flex items-center border-b border-[var(--color-border)] shadow-lg">
-            <h2 className="font-bold text-white truncate flex-1">{selectedServer.name}</h2>
-            <span className="text-[var(--color-accent)] text-xs font-mono">▼</span>
+        {/* User info */}
+        <div className="flex items-center gap-2 mb-4 p-2 bg-black/30 rounded-lg border border-[#4fdfff]/30">
+          <div className="w-8 h-8 rounded-full bg-[#4fdfff]/20 border border-[#4fdfff]/50 flex items-center justify-center">
+            <span className="text-[#4fdfff] text-xs font-bold">
+              {user?.username?.charAt(0).toUpperCase() || "?"}
+            </span>
           </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">{user?.username || "Guest"}</p>
+            <p className="text-[10px] text-[#4fdfff] font-mono">CONNECTED</p>
+          </div>
+          <button
+            onClick={() => logout()}
+            className="p-1.5 text-[#ff3333] hover:bg-[#ff3333]/20 rounded transition-colors"
+            title="Deconnexion"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
 
-          {/* Channels */}
-          <div className="flex-1 overflow-y-auto p-2">
-            <div className="flex items-center justify-between px-2 mb-2">
-              <span className="text-[10px] font-bold text-[var(--color-text-muted)] tracking-widest uppercase">
-                CHANNELS TEXTUELS
-              </span>
-              <button
-                onClick={() => setShowCreateChannel(true)}
-                className="text-[var(--color-text-muted)] hover:text-[var(--color-accent)] transition-colors"
-                title="Creer un channel"
-              >
-                +
-              </button>
-            </div>
+        {/* Action buttons */}
+        <div className="flex flex-col gap-[10px] mb-4">
+          <button onClick={() => setShowCreateServer(true)} className={actionBtn}>
+            + CREATE SERVER
+          </button>
+        </div>
 
-            <div className="space-y-[2px]">
-              {channelsLoading ? (
-                <div className="px-2 py-2 text-[var(--color-text-muted)] text-sm">Chargement...</div>
-              ) : channelsError ? (
-                <div className="px-2 py-2 text-[var(--color-accent-red)] text-sm">{channelsError}</div>
-              ) : channels.length === 0 ? (
-                <div className="px-2 py-2 text-[var(--color-text-muted)] text-sm italic">Aucun channel</div>
-              ) : (
-                channels.map((channel) => (
+        {/* Servers & Channels list */}
+        <nav className="flex-1 overflow-y-auto">
+          <h4 className="text-[12px] tracking-wider uppercase text-[#4fdfff] mt-[15px] mb-[6px] font-bold">
+            SERVERS ({servers.length})
+          </h4>
+          
+          {servers.length === 0 ? (
+            <p className="text-[14px] text-white/40 italic">No server yet</p>
+          ) : (
+            <ul className="list-none space-y-1">
+              {servers.map((server) => (
+                <li key={server.id}>
                   <button
-                    key={channel.id}
-                    onClick={() => selectChannel(channel)}
-                    className={`w-full text-left px-2 py-1.5 rounded flex items-center gap-2 transition-colors ${
-                      selectedChannel?.id === channel.id
-                        ? "bg-[var(--color-accent)]/15 text-white"
-                        : "text-[var(--color-text-dim)] hover:bg-white/5 hover:text-[var(--color-text)]"
+                    onClick={() => selectServer(server)}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-all ${
+                      selectedServer?.id === server.id
+                        ? "bg-[#4fdfff]/20 text-[#4fdfff] border border-[#4fdfff]/50"
+                        : "text-white/80 hover:bg-white/10 hover:text-white"
                     }`}
                   >
-                    <span className="text-[var(--color-text-muted)]">#</span>
-                    <span className="truncate text-sm">{channel.name}</span>
+                    <span className="text-[14px] font-bold">{server.name}</span>
                   </button>
-                ))
-              )}
-            </div>
-          </div>
 
-      <div className="h-14 px-2 flex items-center gap-2 bg-[rgba(0,0,0,0.5)] border-t border-[var(--color-border-dim)]">
-        <div className="w-8 h-8 rounded-full bg-[var(--color-accent)]/20 border border-[var(--color-accent)]/50 flex items-center justify-center">
-          <span className="text-[var(--color-accent)] text-xs font-bold">
-            {user?.username?.charAt(0).toUpperCase() || "?"}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white truncate">{user?.username || "Guest"}</p>
-          <p className="text-[10px] text-[var(--color-accent)] font-mono">Connecté</p>
-        </div>
-      </div>
+                  {/* Channels sous le serveur sélectionné */}
+                  {selectedServer?.id === server.id && (
+                    <div className="ml-3 mt-1 border-l-2 border-[#4fdfff]/30 pl-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] text-white/50 uppercase tracking-wider">Channels</span>
+                        <button
+                          onClick={() => setShowCreateChannel(true)}
+                          className="text-[#4fdfff] hover:text-white text-xs"
+                        >
+                          +
+                        </button>
+                      </div>
+                      {channelsLoading ? (
+                        <p className="text-[12px] text-white/40">Loading...</p>
+                      ) : channelsError ? (
+                        <p className="text-[12px] text-[#ff3333]">{channelsError}</p>
+                      ) : channels.length === 0 ? (
+                        <p className="text-[12px] text-white/40 italic">No channel</p>
+                      ) : (
+                        channels.map((channel) => (
+                          <button
+                            key={channel.id}
+                            onClick={() => selectChannel(channel)}
+                            className={`w-full text-left px-2 py-1 rounded text-[13px] transition-all flex items-center gap-1 ${
+                              selectedChannel?.id === channel.id
+                                ? "text-[#4fdfff] bg-[#4fdfff]/10"
+                                : "text-white/60 hover:text-white/90"
+                            }`}
+                          >
+                            <span className="text-white/40">#</span>
+                            {channel.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </nav>
       </aside>
-      ) : (
-        <aside className="w-60 bg-[rgba(5,10,15,0.95)] border-r border-[var(--color-border-dim)] flex items-center justify-center">
-          <p className="text-[var(--color-text-muted)] text-sm italic">Selectionnez un serveur</p>
-        </aside>
-      
-      )}
-      {/* ========== CHAT AREA ========== */}
-      <main className="flex-1 flex flex-col bg-[rgba(10,15,20,0.9)]">
-        {selectedChannel ? (
-          <>
-            {/* Channel header */}
-            <header className="h-12 px-4 flex items-center border-b border-[var(--color-border-dim)] shadow-md">
-              <span className="text-[var(--color-text-muted)] mr-2">#</span>
-              <h3 className="font-bold text-white">{selectedChannel.name}</h3>
-              <div className="ml-4 w-[1px] h-6 bg-[var(--color-border-dim)]" />
-              <p className="ml-4 text-[var(--color-text-muted)] text-sm truncate">
-                Bienvenue dans #{selectedChannel.name}
-              </p>
-            </header>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messagesLoading ? (
-                <div className="h-full flex items-center justify-center">
-                  <p className="text-[var(--color-text-muted)]">Chargement des messages...</p>
+      {/* ========== CENTER CHAT - ORIGINAL STYLE ========== */}
+      <div className="flex-1 flex justify-center items-stretch p-0">
+        <section className="w-full max-w-[1100px] flex flex-col bg-[rgba(20,20,20,0.85)] backdrop-blur-[12px] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          
+          {/* Header */}
+          <header className="p-5 border-b-2 border-[#4fdfff]">
+            <h1 className="text-white font-bold text-[16px]">
+              {selectedChannel ? (
+                <>
+                  <span className="text-white/40">#</span> {selectedChannel.name}
+                  <span className="text-white/40 ml-3 text-sm font-normal">in {selectedServer?.name}</span>
+                </>
+              ) : selectedServer ? (
+                <>
+                  <span className="text-[#ff3b3b]">{selectedServer.name}</span>
+                  <span className="text-white/40 ml-3 text-sm font-normal">- Select a channel</span>
+                </>
+              ) : (
+                <>
+                  Welcome to <span className="text-[#ff3b3b] font-bold drop-shadow-[0_0_8px_rgba(255,59,59,0.6)]">HELLO WORLD</span> messaging platform
+                </>
+              )}
+            </h1>
+          </header>
+
+          {/* Messages area */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {!selectedChannel ? (
+              <div className="h-full flex items-center justify-center tracking-[3px]">
+                <div className="text-center">
+                  <p className="text-[#ff3b3b] text-4xl font-bold italic tracking-[6px] mb-4 animate-pulse drop-shadow-[0_0_20px_rgba(255,59,59,0.4)]">
+                    HELLO WORLD
+                  </p>
+                  <p className="text-white/40 text-2xl font-bold uppercase">
+                    {selectedServer ? "SELECT A CHANNEL" : "SELECT A SERVER"}
+                  </p>
                 </div>
-              ) : messagesError ? (
-                <div className="h-full flex items-center justify-center">
-                  <p className="text-[var(--color-accent-red)]">{messagesError}</p>
-                </div>
-              ) : Array.isArray(messages) && messages.length > 0 ? (
-                messages.map((msg) => (
-                  <div key={msg.id} className="flex items-start gap-3 group hover:bg-white/[0.02] -mx-4 px-4 py-1 rounded">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-accent)]/30 to-[var(--color-accent-red)]/20 border border-[var(--color-accent)]/30 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[var(--color-accent)] font-bold">
+              </div>
+            ) : messagesLoading ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-[#4fdfff] animate-pulse">Loading messages...</p>
+              </div>
+            ) : messagesError ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-[#ff3333]">{messagesError}</p>
+              </div>
+            ) : Array.isArray(messages) && messages.length > 0 ? (
+              <div className="space-y-3">
+                {messages.map((msg) => (
+                  <div key={msg.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4fdfff]/30 to-[#ff3333]/20 border-2 border-[#4fdfff]/50 flex items-center justify-center flex-shrink-0">
+                      <span className="text-[#4fdfff] font-bold">
                         {msg.username.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2">
-                        <span className="font-semibold text-[var(--color-accent)] hover:underline cursor-pointer">
+                        <span className="font-bold text-[#4fdfff]">
                           {msg.username}
                         </span>
-                        <span className="text-[10px] text-[var(--color-text-muted)] font-mono">
+                        <span className="text-[10px] text-white/40 font-mono">
                           {new Date(msg.created_at).toLocaleTimeString("fr-FR", {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
                         </span>
                       </div>
-                      <p className="text-[var(--color-text)] leading-relaxed break-words">
+                      <p className="text-white leading-relaxed break-words">
                         {msg.content}
                       </p>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-20 h-20 rounded-full bg-[var(--color-accent)]/10 border-2 border-[var(--color-accent)]/30 flex items-center justify-center mb-4">
-                    <span className="text-4xl text-[var(--color-accent)]">#</span>
-                  </div>
-                  <h4 className="text-xl font-bold text-white mb-2">
-                    Bienvenue dans #{selectedChannel.name}
-                  </h4>
-                  <p className="text-[var(--color-text-muted)] text-sm mb-2">
-                    C&apos;est le debut du channel. Envoyez un message !
-                  </p>
-                  {messages && messages.length === 0 && (
-                    <p className="text-[var(--color-text-muted)] text-xs">
-                      Aucun message trouvé
-                    </p>
-                  )}
+                ))}
+              </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 rounded-full bg-[#4fdfff]/10 border-2 border-[#4fdfff]/30 flex items-center justify-center mb-4">
+                  <span className="text-4xl text-[#4fdfff]">#</span>
                 </div>
-              )}
-            </div>
+                <h4 className="text-xl font-bold text-white mb-2">
+                  Welcome to #{selectedChannel.name}
+                </h4>
+                <p className="text-white/40 text-sm">
+                  This is the beginning. Send a message!
+                </p>
+              </div>
+            )}
+          </div>
 
-            {/* Message input */}
-            <div className="p-4">
-              <form onSubmit={handleSendMessage} className="relative">
-                <input
+          {/* Message input */}
+          {selectedChannel && (
+            <footer className="p-[15px] border-t-2 border-[#4fdfff]">
+              <form onSubmit={handleSendMessage}>
+                <input 
                   type="text"
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
-                  placeholder={`Envoyer un message dans #${selectedChannel.name}`}
-                  className="w-full px-4 py-3 bg-[rgba(20,25,30,0.9)] border border-[var(--color-border-dim)] rounded-lg text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:shadow-[0_0_10px_rgba(79,223,255,0.2)] transition-all"
+                  placeholder={`Message #${selectedChannel.name}`}
+                  className="w-full p-3 bg-[rgba(31,31,31,0.9)] border-2 border-[#4fdfff] text-white font-bold outline-none rounded-lg placeholder:text-white/50 focus:shadow-[0_0_12px_rgba(79,223,255,0.6)] transition-all duration-300"
                 />
-                <button
-                  type="submit"
-                  disabled={!messageInput.trim()}
-                  aria-label="Envoyer le message"
-                  title="Envoyer le message"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[var(--color-accent)] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                  </svg>
-                </button>
               </form>
-            </div>
-          </>
+            </footer>
+          )}
+        </section>
+      </div>
+
+      {/* ========== RIGHT SIDEBAR - MEMBERS ========== */}
+      <aside className="w-[260px] p-5 bg-[rgba(20,20,20,0.85)] backdrop-blur-[12px] flex flex-col border-l-2 border-[#4fdfff] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-fade-in" style={{ animationDelay: '0.3s' }}>
+        
+        <h3 className="text-[12px] tracking-wider uppercase text-[#4fdfff] mt-[15px] mb-[6px] font-bold">
+          MEMBERS {selectedServer && `(${members.length})`}
+        </h3>
+
+        {!selectedServer ? (
+          <p className="text-[14px] text-white/40 italic">Select a server</p>
+        ) : members.length === 0 ? (
+          <p className="text-[14px] text-white/40 italic">No members</p>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="text-center">
-              <p className="text-[var(--color-accent-red)] text-4xl font-bold italic tracking-[6px] mb-4 animate-pulse drop-shadow-[0_0_20px_rgba(255,51,51,0.4)]">
-                HELLO WORLD
-              </p>
-              <p className="text-[var(--color-text-muted)] text-sm font-mono">
-                {selectedServer ? "Selectionnez un channel" : "Selectionnez un serveur pour commencer"}
-              </p>
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* ========== MEMBER LIST ========== */}
-      {selectedServer && (
-        <aside className="w-60 bg-[rgba(5,10,15,0.95)] border-l border-[var(--color-border-dim)] overflow-y-auto">
-          <div className="p-4">
-            <h4 className="text-[10px] font-bold text-[var(--color-text-muted)] tracking-widest uppercase mb-3">
-              MEMBRES — {members.length}
-            </h4>
-
+          <>
             {/* Owners */}
             {members.filter((m) => m.role === "Owner").length > 0 && (
               <div className="mb-4">
-                <p className="text-[10px] text-[var(--color-accent-red)] font-bold mb-2 tracking-wider">
-                  PROPRIETAIRE
+                <p className="text-[10px] text-[#ff3333] font-bold mb-2 tracking-wider uppercase">
+                  OWNER
                 </p>
                 {members
                   .filter((m) => m.role === "Owner")
                   .map((member) => (
                     <div
                       key={member.user_id}
-                      className="flex items-center gap-2 py-1 px-2 rounded hover:bg-white/5 cursor-pointer"
+                      className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors"
                     >
                       <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-accent-red)]/30 to-[var(--color-accent)]/20 border border-[var(--color-accent-red)]/50 flex items-center justify-center">
-                          <span className="text-[var(--color-accent-red)] text-xs font-bold">U</span>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff3333]/30 to-[#4fdfff]/20 border-2 border-[#ff3333]/50 flex items-center justify-center">
+                          <span className="text-[#ff3333] text-xs font-bold">U</span>
                         </div>
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[rgba(5,10,15,0.95)] rounded-full" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[rgba(20,20,20,0.85)] rounded-full" />
                       </div>
-                      <span className="text-sm text-[var(--color-text-dim)] truncate">
+                      <span className="text-sm text-white/80 truncate">
                         {member.user_id.slice(0, 8)}...
                       </span>
                     </div>
@@ -346,44 +330,57 @@ export default function Home() {
               </div>
             )}
 
-            {/* Members */}
+            {/* Regular members */}
             {members.filter((m) => m.role !== "Owner").length > 0 && (
               <div>
-                <p className="text-[10px] text-[var(--color-text-muted)] font-bold mb-2 tracking-wider">
-                  MEMBRES
+                <p className="text-[10px] text-white/50 font-bold mb-2 tracking-wider uppercase">
+                  MEMBERS
                 </p>
                 {members
                   .filter((m) => m.role !== "Owner")
                   .map((member) => (
                     <div
                       key={member.user_id}
-                      className="flex items-center gap-2 py-1 px-2 rounded hover:bg-white/5 cursor-pointer"
+                      className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors"
                     >
                       <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 flex items-center justify-center">
-                          <span className="text-[var(--color-accent)] text-xs font-bold">U</span>
+                        <div className="w-8 h-8 rounded-full bg-[#4fdfff]/10 border border-[#4fdfff]/30 flex items-center justify-center">
+                          <span className="text-[#4fdfff] text-xs font-bold">U</span>
                         </div>
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gray-500 border-2 border-[rgba(5,10,15,0.95)] rounded-full" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gray-500 border-2 border-[rgba(20,20,20,0.85)] rounded-full" />
                       </div>
-                      <span className="text-sm text-[var(--color-text-dim)] truncate">
+                      <span className="text-sm text-white/60 truncate">
                         {member.user_id.slice(0, 8)}...
                       </span>
                     </div>
                   ))}
               </div>
             )}
+          </>
+        )}
+
+        {/* Server info section */}
+        {selectedServer && (
+          <div className="mt-auto pt-4 border-t border-[#4fdfff]/30">
+            <h3 className="text-[12px] tracking-wider uppercase text-[#4fdfff] mb-2 font-bold">
+              SERVER INFO
+            </h3>
+            <p className="text-[14px] text-white/80">{selectedServer.name}</p>
+            <p className="text-[10px] text-white/40 font-mono mt-1">
+              ID: {selectedServer.id.slice(0, 8)}...
+            </p>
           </div>
-        </aside>
-      )}
+        )}
+      </aside>
 
       {/* ========== MODAL CREATE SERVER ========== */}
       {showCreateServer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCreateServer(false)} />
-          <div className="relative bg-[rgba(10,15,20,0.98)] border-2 border-[var(--color-accent)] rounded-lg p-6 w-full max-w-md shadow-[0_0_40px_rgba(79,223,255,0.2)]">
-            <h2 className="text-xl font-bold text-center text-white mb-1">Creer un serveur</h2>
-            <p className="text-center text-[var(--color-text-muted)] text-sm mb-6">
-              Votre serveur sera votre espace de discussion
+          <div className="relative bg-[rgba(20,20,20,0.98)] border-2 border-[#4fdfff] rounded-xl p-6 w-full max-w-md shadow-[0_0_40px_rgba(79,223,255,0.3)]">
+            <h2 className="text-xl font-bold text-center text-white mb-1">CREATE SERVER</h2>
+            <p className="text-center text-white/50 text-sm mb-6">
+              Your server will be your discussion space
             </p>
             {serversError && (
               <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-lg mb-4 text-sm">
@@ -391,31 +388,31 @@ export default function Home() {
               </div>
             )}
             <form onSubmit={handleCreateServer}>
-              <label className="block text-[10px] font-bold text-[var(--color-text-muted)] tracking-widest uppercase mb-2">
-                NOM DU SERVEUR
+              <label className="block text-[10px] font-bold text-[#4fdfff] tracking-widest uppercase mb-2">
+                SERVER NAME
               </label>
               <input
                 type="text"
                 value={newServerName}
                 onChange={(e) => setNewServerName(e.target.value)}
-                placeholder="Mon serveur"
+                placeholder="My Server"
                 autoFocus
-                className="w-full px-4 py-3 bg-[rgba(0,0,0,0.5)] border border-[var(--color-border-dim)] rounded text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] mb-6"
+                className="w-full px-4 py-3 bg-black/50 border-2 border-[#4fdfff]/50 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[#4fdfff] focus:shadow-[0_0_10px_rgba(79,223,255,0.3)] mb-6 transition-all"
               />
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCreateServer(false)}
-                  className="flex-1 py-2.5 text-[var(--color-text-dim)] hover:text-white hover:underline transition-colors"
+                  className="flex-1 py-2.5 text-white/60 hover:text-white hover:underline transition-colors"
                 >
-                  Annuler
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!newServerName.trim()}
-                  className="flex-1 py-2.5 bg-[var(--color-accent)] text-black font-bold rounded hover:bg-[var(--color-accent)]/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className={actionBtn}
                 >
-                  Creer
+                  Create
                 </button>
               </div>
             </form>
@@ -427,45 +424,46 @@ export default function Home() {
       {showCreateChannel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCreateChannel(false)} />
-          <div className="relative bg-[rgba(10,15,20,0.98)] border-2 border-[var(--color-accent)] rounded-lg p-6 w-full max-w-md shadow-[0_0_40px_rgba(79,223,255,0.2)]">
-            <h2 className="text-xl font-bold text-center text-white mb-1">Creer un channel</h2>
-            <p className="text-center text-[var(--color-text-muted)] text-sm mb-6">
-              dans {selectedServer?.name}
+          <div className="relative bg-[rgba(20,20,20,0.98)] border-2 border-[#4fdfff] rounded-xl p-6 w-full max-w-md shadow-[0_0_40px_rgba(79,223,255,0.3)]">
+            <h2 className="text-xl font-bold text-center text-white mb-1">CREATE CHANNEL</h2>
+            <p className="text-center text-white/50 text-sm mb-6">
+              in {selectedServer?.name}
             </p>
             <form onSubmit={handleCreateChannel}>
-              <label className="block text-[10px] font-bold text-[var(--color-text-muted)] tracking-widest uppercase mb-2">
-                NOM DU CHANNEL
+              <label className="block text-[10px] font-bold text-[#4fdfff] tracking-widest uppercase mb-2">
+                CHANNEL NAME
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none">#</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">#</span>
                 <input
                   type="text"
                   value={newChannelName}
                   onChange={(e) => setNewChannelName(e.target.value)}
                   placeholder="general"
                   autoFocus
-                  className="w-full pl-8 pr-4 py-3 bg-[rgba(0,0,0,0.5)] border border-[var(--color-border-dim)] rounded text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] mb-6"
+                  className="w-full pl-8 pr-4 py-3 bg-black/50 border-2 border-[#4fdfff]/50 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[#4fdfff] focus:shadow-[0_0_10px_rgba(79,223,255,0.3)] mb-6 transition-all"
                 />
               </div>
               <div className="flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowCreateChannel(false)}
-                  className="flex-1 py-2.5 text-[var(--color-text-dim)] hover:text-white hover:underline transition-colors"
+                  className="flex-1 py-2.5 text-white/60 hover:text-white hover:underline transition-colors"
                 >
-                  Annuler
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!newChannelName.trim()}
-                  className="flex-1 py-2.5 bg-[var(--color-accent)] text-black font-bold rounded hover:bg-[var(--color-accent)]/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                  Creer
+                  className={actionBtn}
+                >
+                  Create
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }
