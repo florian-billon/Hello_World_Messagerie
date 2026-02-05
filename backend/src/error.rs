@@ -2,37 +2,46 @@ use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde::Serialize;
+use thiserror::Error;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Error)]
 #[serde(tag = "type", content = "data")]
 pub enum Error {
+    #[error("Missing authorization header")]
     AuthFailNoAuthHeader,
+    #[error("Invalid token")]
     AuthFailInvalidToken,
+    #[error("Token expired")]
     AuthFailTokenExpired,
+    #[error("Invalid credentials")]
     InvalidCredentials,
+    #[error("Email already exists")]
     EmailAlreadyExists,
+    #[error("User not found")]
     UserNotFound,
+    #[error("Server not found")]
     ServerNotFound,
+    #[error("Server access forbidden")]
     ServerForbidden,
+    #[error("Owner cannot leave server")]
     ServerOwnerCannotLeave,
+    #[error("Already a member")]
     ServerAlreadyMember,
+    #[error("Channel not found")]
     ChannelNotFound,
+    #[error("Channel access forbidden")]
     ChannelForbidden,
+    #[error("Message not found")]
     MessageNotFound,
+    #[error("Message access forbidden")]
     MessageForbidden,
+    #[error("Database error: {message}")]
     DatabaseError { message: String },
+    #[error("Internal error: {message}")]
     InternalError { message: String },
 }
-
-impl core::fmt::Display for Error {
-    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-        write!(f, "{self:?}")
-    }
-}
-
-impl std::error::Error for Error {}
 
 impl From<sqlx::Error> for Error {
     fn from(err: sqlx::Error) -> Self {

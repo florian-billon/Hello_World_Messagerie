@@ -1,8 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-
-const API_URL = process.env.API_URL || "http://localhost:3001";
+import { API_URL } from "./config";
 
 async function getToken(): Promise<string | null> {
   const cookieStore = await cookies();

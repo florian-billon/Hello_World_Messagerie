@@ -7,7 +7,7 @@ use axum::{
 use axum_extra::TypedHeader;
 use headers::{authorization::Bearer, Authorization};
 
-use crate::models::{AuthResponse, LoginPayload, SignupPayload/* , UserResponse */};
+use crate::models::{AuthResponse, LoginPayload, SignupPayload};
 use crate::services::{self, auth::AuthError, verify_token};
 use crate::AppState;
 
@@ -17,7 +17,6 @@ impl IntoResponse for AuthError {
         let (status, message) = match self {
             AuthError::EmailExists => (StatusCode::CONFLICT, "Email already exists"),
             AuthError::InvalidCredentials => (StatusCode::UNAUTHORIZED, "Invalid email or password"),
-            AuthError::UserNotFound => (StatusCode::NOT_FOUND, "User not found"),
             AuthError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error"),
             AuthError::PasswordHash(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Password error"),
             AuthError::Jwt(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Token error"),
@@ -57,15 +56,4 @@ pub async fn logout(
     services::logout(&state.db, claims.sub).await?;
     Ok(StatusCode::NO_CONTENT)
 }
-
-/* pub async fn me(
-    State(state): State<AppState>,
-    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
-) -> Result<Json<UserResponse>, AuthError> {
-    let claims = verify_token(auth.token(), &state.jwt_secret)
-        .map_err(|_| AuthError::InvalidCredentials)?;
-
-    let user = services::get_user_by_id(&state.db, claims.sub).await?;
-    Ok(Json(user))
-} */
 

@@ -6,7 +6,7 @@ import {
   createChannel as apiCreateChannel,
   Channel,
 } from "@/lib/api-server";
-import { handleAuthError } from "@/lib/auth/utils";
+import { handleAuthError, isAuthError, getErrorMessage } from "@/lib/auth/utils";
 
 export function useChannels(serverId: string | null) {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -26,8 +26,8 @@ export function useChannels(serverId: string | null) {
         setSelectedChannel(null);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load channels";
-      if (errorMessage.includes("Authentication") || errorMessage.includes("Invalid token") || errorMessage.includes("Missing authorization")) {
+      const errorMessage = getErrorMessage(err, "Failed to load channels");
+      if (isAuthError(errorMessage)) {
         handleAuthError();
         return;
       }
@@ -63,8 +63,8 @@ export function useChannels(serverId: string | null) {
       setSelectedChannel(newChannel);
       return newChannel;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to create channel";
-      if (errorMessage.includes("Authentication") || errorMessage.includes("Invalid token") || errorMessage.includes("Missing authorization")) {
+      const errorMessage = getErrorMessage(err, "Failed to create channel");
+      if (isAuthError(errorMessage)) {
         handleAuthError();
         return null;
       }

@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::{UpdateMePayload, User, UserStatus};
+use crate::models::{UpdateMePayload, User};
 
 #[derive(Clone)]
 pub struct UserRepository {
@@ -20,58 +20,6 @@ impl UserRepository {
         .bind(user_id)
         .fetch_optional(&self.pool)
         .await
-    }
-
-    pub async fn find_by_email(&self, email: &str) -> sqlx::Result<Option<User>> {
-        sqlx::query_as::<_, User>(
-            "SELECT id, email, password_hash, username, avatar_url, status, created_at FROM users WHERE email = $1",
-        )
-        .bind(email)
-        .fetch_optional(&self.pool)
-        .await
-    }
-
-    pub async fn email_exists(&self, email: &str) -> sqlx::Result<bool> {
-        let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM users WHERE email = $1")
-            .bind(email)
-            .fetch_one(&self.pool)
-            .await?;
-
-        Ok(count > 0)
-    }
-
-    pub async fn create(
-        &self,
-        id: Uuid,
-        email: &str,
-        password_hash: &str,
-        username: &str,
-        status: UserStatus,
-    ) -> sqlx::Result<User> {
-        sqlx::query_as::<_, User>(
-            r#"
-            INSERT INTO users (id, email, password_hash, username, status, created_at)
-            VALUES ($1, $2, $3, $4, $5, NOW())
-            RETURNING id, email, password_hash, username, avatar_url, status, created_at
-            "#,
-        )
-        .bind(id)
-        .bind(email)
-        .bind(password_hash)
-        .bind(username)
-        .bind(status)
-        .fetch_one(&self.pool)
-        .await
-    }
-
-    pub async fn update_status(&self, user_id: Uuid, status: UserStatus) -> sqlx::Result<()> {
-        sqlx::query("UPDATE users SET status = $1 WHERE id = $2")
-            .bind(status)
-            .bind(user_id)
-            .execute(&self.pool)
-            .await?;
-
-        Ok(())
     }
 
     pub async fn get_usernames_batch(

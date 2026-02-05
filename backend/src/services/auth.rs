@@ -11,9 +11,6 @@ pub enum AuthError {
     EmailExists,
     #[error("Invalid credentials")]
     InvalidCredentials,
-    #[allow(dead_code)]
-    #[error("User not found")]
-    UserNotFound,
     #[error("Database error: {0}")]
     Database(#[from] sqlx::Error),
     #[error("Password hash error: {0}")]

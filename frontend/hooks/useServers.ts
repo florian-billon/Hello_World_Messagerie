@@ -6,7 +6,7 @@ import {
   createServer as apiCreateServer,
   Server,
 } from "@/lib/api-server";
-import { handleAuthError } from "@/lib/auth/utils";
+import { handleAuthError, isAuthError, getErrorMessage } from "@/lib/auth/utils";
 
 export function useServers() {
   const [servers, setServers] = useState<Server[]>([]);
@@ -21,8 +21,8 @@ export function useServers() {
       const data = await listServers();
       setServers(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load servers";
-      if (errorMessage.includes("Authentication") || errorMessage.includes("Invalid token") || errorMessage.includes("Missing authorization")) {
+      const errorMessage = getErrorMessage(err, "Failed to load servers");
+      if (isAuthError(errorMessage)) {
         setServers([]);
         setError(null);
         handleAuthError();
@@ -52,8 +52,8 @@ export function useServers() {
       setSelectedServer(newServer);
       return newServer;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to create server";
-      if (errorMessage.includes("Authentication") || errorMessage.includes("Invalid token") || errorMessage.includes("Missing authorization")) {
+      const errorMessage = getErrorMessage(err, "Failed to create server");
+      if (isAuthError(errorMessage)) {
         handleAuthError();
         return null;
       }

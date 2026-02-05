@@ -6,7 +6,7 @@ import {
   sendMessage as apiSendMessage,
   Message,
 } from "@/lib/api-server";
-import { handleAuthError } from "@/lib/auth/utils";
+import { handleAuthError, isAuthError, getErrorMessage } from "@/lib/auth/utils";
 
 export function useMessages(channelId: string | null, pollingInterval = 3000) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -28,9 +28,9 @@ export function useMessages(channelId: string | null, pollingInterval = 3000) {
       const messagesArray = Array.isArray(data) ? data : [];
       setMessages(messagesArray);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load messages";
+      const errorMessage = getErrorMessage(err, "Failed to load messages");
       setError(errorMessage);
-      if (errorMessage.includes("Authentication") || errorMessage.includes("Invalid token") || errorMessage.includes("Missing authorization")) {
+      if (isAuthError(errorMessage)) {
         handleAuthError();
         return;
       }
@@ -72,8 +72,8 @@ export function useMessages(channelId: string | null, pollingInterval = 3000) {
       await loadMessages(channelId, false);
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to send message";
-      if (errorMessage.includes("Authentication") || errorMessage.includes("Invalid token") || errorMessage.includes("Missing authorization")) {
+      const errorMessage = getErrorMessage(err, "Failed to send message");
+      if (isAuthError(errorMessage)) {
         handleAuthError();
         return false;
       }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { listMembers, ServerMember } from "@/lib/api-server";
-import { handleAuthError } from "@/lib/auth/utils";
+import { handleAuthError, isAuthError, getErrorMessage } from "@/lib/auth/utils";
 
 export function useMembers(serverId: string | null) {
   const [members, setMembers] = useState<ServerMember[]>([]);
@@ -16,8 +16,8 @@ export function useMembers(serverId: string | null) {
       const data = await listMembers(id);
       setMembers(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load members";
-      if (errorMessage.includes("Authentication") || errorMessage.includes("Invalid token") || errorMessage.includes("Missing authorization")) {
+      const errorMessage = getErrorMessage(err, "Failed to load members");
+      if (isAuthError(errorMessage)) {
         handleAuthError();
         return;
       }
