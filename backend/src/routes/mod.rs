@@ -1,13 +1,16 @@
 pub mod auth;
+pub mod channels;
+pub mod messages;
 pub mod servers;
-pub mod user;
 
 use axum::Router;
+
 use crate::AppState;
 
-pub fn app_routes() -> Router<AppState> {
+pub fn create_router() -> Router<AppState> {
     Router::new()
-        .merge(auth::routes())
-        .merge(user::routes())
         .merge(servers::routes())
+        .merge(channels::routes())
+        .merge(messages::routes())
 }
+

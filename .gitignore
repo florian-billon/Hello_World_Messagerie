@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Rust
+target/
+backend/target/
+
+# Node / Next
+frontend/node_modules/
+frontend/.next/
+node_modules/
+.next/
+
+# Env
+backend/.env
+backend/Cargo.toml
+backend/Cargo.lock
