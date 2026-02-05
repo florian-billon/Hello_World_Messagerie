@@ -1,8 +1,13 @@
+<<<<<<< HEAD
+use axum::{routing::{get, post}, Router};
+use crate::{handlers::servers, AppState};
+=======
 #[allow(unused_imports)]
 use axum::{routing::delete, routing::get, routing::post, routing::put, Router};
 
 use crate::handlers::servers;
 use crate::AppState;
+>>>>>>> Profile
 
 pub fn routes() -> Router<AppState> {
     Router::new()
@@ -13,8 +18,12 @@ pub fn routes() -> Router<AppState> {
                 .put(servers::update_server)
                 .delete(servers::delete_server),
         )
+<<<<<<< HEAD
+}
+=======
         .route("/servers/{id}/join", post(servers::join_server))
         .route("/servers/{id}/leave", delete(servers::leave_server))
         .route("/servers/{id}/members", get(servers::list_members))
 }
 
+>>>>>>> Profile

@@ -5,6 +5,14 @@ pub mod channels;
 pub mod jwt;
 pub mod messages;
 pub mod password;
+<<<<<<< HEAD
+pub mod user;
+
+pub use auth::*;
+pub use jwt::*;
+pub use password::*;
+pub use user::*;
+=======
 pub mod servers;
 
 pub use auth::{get_user_by_id, login, logout, signup};
@@ -17,3 +25,4 @@ pub use servers::{
     list_user_servers, update_server,
 };
 
+>>>>>>> Profile
