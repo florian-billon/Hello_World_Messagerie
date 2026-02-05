@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hello World RTC
 
-## Getting Started
+Application de messagerie instantanée en temps réel inspirée de Discord.
 
-First, run the development server:
+## 🚀 Démarrage Rapide
+
+### Prérequis
+
+- Docker & Docker Compose
+- Rust 1.75+ (pour le backend)
+- Node.js 20+ (pour le frontend)
+
+### 1. Lancer PostgreSQL et MongoDB
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker-compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Initialiser la base de données
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+docker exec -i helloworld-postgres psql -U postgres -d helloworld < backend/migrations/init.sql
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Lancer le Backend
 
-## Learn More
+```bash
+cd backend
+cargo run
+```
 
-To learn more about Next.js, take a look at the following resources:
+Le backend sera accessible sur `http://localhost:3001`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Lancer le Frontend
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Deploy on Vercel
+Le frontend sera accessible sur `http://localhost:3000`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📚 Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+La documentation complète est disponible dans le dossier [`docs/`](./docs/README.md) :
+
+- [Spécifications](./docs/specifications/requirements.md)
+- [Architecture technique](./docs/architecture/overview.md)
+- [Schéma de base de données](./docs/architecture/database.md)
+- [Guide de déploiement](./DEPLOY.md)
+
+## 🛠️ Stack Technique
+
+| Composant | Technologie |
+|-----------|-------------|
+| **Frontend** | Next.js 16 + React 19 + TypeScript + Tailwind CSS |
+| **Backend** | Rust + Axum + Tokio |
+| **Base de données** | PostgreSQL (relationnel) + MongoDB (messages) |
+| **Authentification** | JWT + bcrypt |
+
+## ✨ Fonctionnalités
+
+- ✅ Authentification (inscription/connexion)
+- ✅ Gestion des serveurs (création, rejoindre)
+- ✅ Canaux textuels par serveur
+- ✅ Messages en temps réel (polling, WebSocket prévu)
+- ✅ Rôles et permissions (Owner/Admin/Member)
+- ✅ Profils utilisateurs
+
+## 🔧 Variables d'environnement
+
+Voir [`env.example`](./env.example) pour la configuration complète.
+
+### Backend (.env)
+
+```bash
+DATABASE_URL=postgres://postgres:postgres@localhost:5433/helloworld
+MONGODB_URL=mongodb://localhost:27017
+JWT_SECRET=your_super_secret_key_change_in_production
+PORT=3001
+```
+
+### Frontend (.env.local)
+
+```bash
+API_URL=http://localhost:3001
+```
+
+## 📦 Déploiement
+
+Voir le [Guide de Déploiement](./DEPLOY.md) pour les instructions détaillées.
+
+Solutions supportées :
+- **Render** (recommandé pour organisations GitHub)
+- **Fly.io** (CLI, pas besoin de permissions GitHub)
+
+## 👥 Équipe
+
+- **Romeo** - Backend Rust
+- **Bilel** - Frontend
+- **Florian** - Frontend/Design
+
+## 📄 Licence
+
+Projet académique - Epitech MSc Pro 2028
