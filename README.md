@@ -139,6 +139,28 @@ The application will be available at `http://localhost:3000`.
 |----------|-------------|---------|
 | `API_URL` | Backend API URL | `http://localhost:3001` |
 
+### Production Configuration
+
+#### NeonDB (PostgreSQL)
+
+1. Go to [Neon Console](https://console.neon.tech/)
+2. Navigate to your project > **Connection Details**
+3. Copy the connection string (with `?sslmode=require`)
+
+```bash
+DATABASE_URL=postgres://user:password@ep-xxx-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
+```
+
+#### MongoDB Atlas (Messages)
+
+1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
+2. Navigate to **Database** > **Connect** > **Drivers**
+3. Copy the connection string
+
+```bash
+MONGODB_URL=mongodb+srv://user:password@cluster.mongodb.net/?retryWrites=true&w=majority
+```
+
 ## API Endpoints
 
 ### Authentication
