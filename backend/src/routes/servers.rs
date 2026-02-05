@@ -1,4 +1,5 @@
-use axum::{routing::{delete, get, post}, Router};
+#[allow(unused_imports)]
+use axum::{routing::delete, routing::get, routing::post, routing::put, Router};
 
 use crate::handlers::servers;
 use crate::AppState;
