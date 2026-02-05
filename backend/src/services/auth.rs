@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::models::{AuthResponse, LoginPayload, SignupPayload, User, UserResponse, UserStatus};
+use crate::models::{AuthResponse, LoginPayload, SignupPayload, User, UserStatus};
 use crate::services::{create_token, hash_password, verify_password};
 
 /// Erreurs d'authentification
@@ -11,6 +11,7 @@ pub enum AuthError {
     EmailExists,
     #[error("Invalid credentials")]
     InvalidCredentials,
+    #[allow(dead_code)]
     #[error("User not found")]
     UserNotFound,
     #[error("Database error: {0}")]
@@ -99,19 +100,6 @@ pub async fn login(
         user: user.into(),
         token,
     })
-}
-
-/// Récupère un utilisateur par son ID
-pub async fn get_user_by_id(pool: &PgPool, user_id: Uuid) -> Result<UserResponse, AuthError> {
-    let user = sqlx::query_as::<_, User>(
-        "SELECT id, email, password_hash, username, avatar_url, status, created_at FROM users WHERE id = $1",
-    )
-    .bind(user_id)
-    .fetch_optional(pool)
-    .await?
-    .ok_or(AuthError::UserNotFound)?;
-
-    Ok(user.into())
 }
 
 /// Déconnecte un utilisateur (met son statut offline)

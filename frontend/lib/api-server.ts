@@ -90,6 +90,19 @@ export interface ServerMember {
   joined_at: string;
 }
 
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  avatar_url?: string;
+  status: string;
+  created_at: string;
+}
+
+export async function getMe(): Promise<User> {
+  return fetchApi<User>("/me");
+}
+
 export async function listServers(): Promise<Server[]> {
   return fetchApi<Server[]>("/servers");
 }
