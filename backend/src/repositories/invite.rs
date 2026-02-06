@@ -1,0 +1,74 @@
+use sqlx::PgPool;
+use uuid::Uuid;
+
+use crate::models::Invite;
+
+#[derive(Clone)]
+pub struct InviteRepository {
+    pool: PgPool,
+}
+
+impl InviteRepository {
+    pub fn new(pool: PgPool) -> Self {
+        Self { pool }
+    }
+
+    pub async fn create(
+        &self,
+        server_id: Uuid,
+        created_by: Uuid,
+        code: &str,
+        max_uses: Option<i32>,
+        expires_at: Option<chrono::DateTime<chrono::Utc>>,
+    ) -> sqlx::Result<Invite> {
+        sqlx::query_as::<_, Invite>(
+            r#"
+            INSERT INTO invites (code, server_id, created_by, max_uses, expires_at)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, code, server_id, created_by, max_uses, uses, expires_at, revoked, created_at
+            "#,
+        )
+        .bind(code)
+        .bind(server_id)
+        .bind(created_by)
+        .bind(max_uses)
+        .bind(expires_at)
+        .fetch_one(&self.pool)
+        .await
+    }
+
+    pub async fn find_by_code(&self, code: &str) -> sqlx::Result<Option<Invite>> {
+        sqlx::query_as::<_, Invite>(
+            r#"
+            SELECT id, code, server_id, created_by, max_uses, uses, expires_at, revoked, created_at
+            FROM invites
+            WHERE code = $1
+            "#,
+        )
+        .bind(code)
+        .fetch_optional(&self.pool)
+        .await
+    }
+
+    pub async fn increment_use(&self, invite_id: Uuid) -> sqlx::Result<()> {
+        sqlx::query(
+            r#"
+            UPDATE invites
+            SET uses = uses + 1
+            WHERE id = $1
+            "#,
+        )
+        .bind(invite_id)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+
+    pub async fn revoke(&self, invite_id: Uuid) -> sqlx::Result<()> {
+        sqlx::query("UPDATE invites SET revoked = TRUE WHERE id = $1")
+            .bind(invite_id)
+            .execute(&self.pool)
+            .await?;
+        Ok(())
+    }
+}

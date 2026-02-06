@@ -17,7 +17,7 @@ mod repositories;
 mod routes;
 mod services;
 mod web;
-use repositories::{ChannelRepository, MessageRepository, ServerRepository, UserRepository};
+use repositories::{ChannelRepository, MessageRepository, ServerRepository, UserRepository, InviteRepository};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -28,6 +28,7 @@ pub struct AppState {
     pub server_repo: ServerRepository,
     pub channel_repo: ChannelRepository,
     pub message_repo: MessageRepository,
+    pub invite_repo: InviteRepository,
 }
 
 async fn health() -> &'static str {
@@ -60,6 +61,7 @@ async fn main() {
     let server_repo = ServerRepository::new(pool.clone());
     let channel_repo = ChannelRepository::new(pool.clone());
     let message_repo = MessageRepository::new(mongo_db.clone());
+    let invite_repo = InviteRepository::new(pool.clone());
 
     let state = AppState {
         db: pool,
@@ -69,6 +71,7 @@ async fn main() {
         server_repo,
         channel_repo,
         message_repo,
+        invite_repo
     };
 
     let cors = CorsLayer::new()
@@ -79,6 +82,7 @@ async fn main() {
     let routes_protected = routes::create_router()
         .route("/me", get(handlers::user::me).patch(handlers::user::update_me))
         .route("/auth/logout", post(handlers::auth::logout))
+        .route("/invites/{code}/accept", post(handlers::invite::accept_invite))
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             web::mw_require_auth,
@@ -87,6 +91,7 @@ async fn main() {
     let routes_public = Router::new()
         .route("/health", get(health))
         .route("/users/{user_id}", get(handlers::user_public::get_public_user))
+        .route("/invites/{code}", get(handlers::invite::get_invite))
         .merge(routes::auth::routes());
 
     let app = Router::new()
