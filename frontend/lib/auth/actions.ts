@@ -89,3 +89,7 @@ export async function getUser() {
   return res.json();
 }
 
+export async function clearToken() {
+  const cookieStore = await cookies();
+  cookieStore.delete("token");
+}
