@@ -1,27 +1,4 @@
-<div align="center">
-
-<img src="frontend/public/logo.png" width="120" />
-
-<h1>Hello World</h1>
-
-<p><strong>Real-time messaging platform inspired by Discord</strong></p>
-
-<p>
-  <a href="https://www.rust-lang.org/">
-    <img src="https://img.shields.io/badge/Rust-1.75+-orange.svg?style=flat-square&logo=rust&logoColor=white" alt="Rust 1.75+" />
-  </a>
-  <a href="https://nextjs.org/">
-    <img src="https://img.shields.io/badge/Next.js-16-black.svg?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16" />
-  </a>
-  <a href="https://www.postgresql.org/">
-    <img src="https://img.shields.io/badge/PostgreSQL-15-336791.svg?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL 15" />
-  </a>
-  <a href="https://www.mongodb.com/">
-    <img src="https://img.shields.io/badge/MongoDB-7-47A248.svg?style=flat-square&logo=mongodb&logoColor=white" alt="MongoDB 7" />
-  </a>
-</p>
-
-</div>
+# Epitech - Pre Msc
 
 ## Introduction
 
@@ -312,12 +289,3 @@ Built with modern web technologies and best practices:
 - [PostgreSQL](https://www.postgresql.org/) - Advanced open-source relational database
 - [MongoDB](https://www.mongodb.com/) - Document database for scalable applications
 
----
-
-<div align="center">
-
-**Hello World** - Real-time messaging platform
-
-Made with ❤️ using Rust and Next.js
-
-</div>
