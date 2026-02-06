@@ -1,8 +1,26 @@
-CREATE TYPE user_status AS ENUM ('online', 'offline', 'dnd', 'invisible');
-CREATE TYPE member_role AS ENUM ('owner', 'admin', 'member');
+-- ============================================
+-- Hello World - PostgreSQL Schema
+-- ============================================
 
-CREATE TABLE users (
-    id UUID PRIMARY KEY,
+-- EXTENSIONS
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- ENUM TYPES
+DO $$ BEGIN
+    CREATE TYPE user_status AS ENUM ('online', 'offline', 'dnd', 'invisible');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE member_role AS ENUM ('owner', 'admin', 'member');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+-- USERS
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     username VARCHAR(100) NOT NULL,
@@ -11,15 +29,17 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE servers (
-    id UUID PRIMARY KEY,
+-- SERVERS
+CREATE TABLE IF NOT EXISTS servers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE server_members (
+-- SERVER MEMBERS
+CREATE TABLE IF NOT EXISTS server_members (
     server_id UUID NOT NULL REFERENCES servers(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     role member_role NOT NULL DEFAULT 'member',
@@ -27,8 +47,9 @@ CREATE TABLE server_members (
     PRIMARY KEY (server_id, user_id)
 );
 
-CREATE TABLE channels (
-    id UUID PRIMARY KEY,
+-- CHANNELS
+CREATE TABLE IF NOT EXISTS channels (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     server_id UUID NOT NULL REFERENCES servers(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     position INT NOT NULL DEFAULT 0,
@@ -36,8 +57,10 @@ CREATE TABLE channels (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_servers_owner ON servers(owner_id);
-CREATE INDEX idx_server_members_user ON server_members(user_id);
-CREATE INDEX idx_channels_server ON channels(server_id);
+-- INDEXES (idempotent)
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_servers_owner ON servers(owner_id);
+CREATE INDEX IF NOT EXISTS idx_server_members_user ON server_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_channels_server ON channels(server_id);
 
+-- NOTE: Messages are stored in MongoDB, not PostgreSQL
