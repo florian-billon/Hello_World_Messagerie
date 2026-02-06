@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1]" />
           <div className="relative z-10 animate-fade-in">
             {children}
-          </div>
+        </div>
         </div>
       </body>
     </html>

@@ -25,11 +25,30 @@ const statusLabels: Record<UserStatus, string> = {
   invisible: "Invisible",
 };
 
+// Générer la liste des 100 avatars
+const AVATARS = Array.from({ length: 100 }, (_, i) => 
+  `/avatars/avatar_${String(i + 1).padStart(3, '0')}.png`
+);
+
+/**
+ * Normalise le chemin d'avatar (ancien format → nouveau format)
+ */
+function normalizeAvatarUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (url.includes('/space_invaders_avatars/space_invader_')) {
+    return url
+      .replace('/space_invaders_avatars/', '/avatars/')
+      .replace('space_invader_', 'avatar_');
+  }
+  return url;
+}
+
 export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [editData, setEditData] = useState({
     username: user.username,
-    avatar_url: user.avatar_url || "",
+    avatar_url: normalizeAvatarUrl(user.avatar_url) || "",
     status: (user.status?.toLowerCase() || "online") as UserStatus,
   });
   const [saving, setSaving] = useState(false);
@@ -48,7 +67,7 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
     try {
       const payload: UpdateProfilePayload = {};
       if (editData.username !== user.username) payload.username = editData.username;
-      if (editData.avatar_url !== (user.avatar_url || "")) payload.avatar_url = editData.avatar_url || undefined;
+      if (editData.avatar_url !== (normalizeAvatarUrl(user.avatar_url) || "")) payload.avatar_url = editData.avatar_url || undefined;
       if (editData.status !== currentStatus) payload.status = editData.status;
 
       if (Object.keys(payload).length > 0) {
@@ -84,7 +103,7 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
               <div className="w-[80px] h-[80px] rounded-full bg-[#232428] p-1">
                 {user.avatar_url ? (
                   <img 
-                    src={user.avatar_url} 
+                    src={normalizeAvatarUrl(user.avatar_url) || ''} 
                     alt={user.username}
                     className="w-full h-full rounded-full object-cover"
                   />
@@ -110,10 +129,11 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
               <div className="space-y-3">
                 {/* Username edit */}
                 <div>
-                  <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider">
+                  <label htmlFor="edit-username" className="text-[10px] font-bold text-white/60 uppercase tracking-wider">
                     Nom d&apos;utilisateur
                   </label>
                   <input
+                    id="edit-username"
                     type="text"
                     value={editData.username}
                     onChange={(e) => setEditData({ ...editData, username: e.target.value })}
@@ -121,26 +141,54 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
                   />
                 </div>
                 
-                {/* Avatar URL edit */}
+                {/* Avatar selector */}
                 <div>
                   <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider">
-                    URL Avatar
+                    Avatar
                   </label>
-                  <input
-                    type="text"
-                    value={editData.avatar_url}
-                    onChange={(e) => setEditData({ ...editData, avatar_url: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full mt-1 px-3 py-2 bg-[#1e1f22] border border-[#3f4147] rounded text-white text-sm focus:outline-none focus:border-[#5865f2] placeholder:text-white/30"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAvatarPicker(!showAvatarPicker)}
+                    className="w-full mt-1 px-3 py-2 bg-[#1e1f22] border border-[#3f4147] rounded text-white text-sm focus:outline-none focus:border-[#5865f2] flex items-center gap-2 hover:bg-[#2b2d31] transition-colors"
+                  >
+                    {editData.avatar_url && (
+                      <img src={editData.avatar_url} alt="Avatar" className="w-6 h-6 rounded" />
+                    )}
+                    <span>{showAvatarPicker ? "Fermer" : "Choisir un avatar"}</span>
+                  </button>
+                  
+                  {showAvatarPicker && (
+                    <div className="mt-2 max-h-[200px] overflow-y-auto bg-[#1e1f22] border border-[#3f4147] rounded p-2 grid grid-cols-8 gap-1">
+                      {AVATARS.map((avatarUrl, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => {
+                            setEditData({ ...editData, avatar_url: avatarUrl });
+                            setShowAvatarPicker(false);
+                          }}
+                          className={`w-8 h-8 rounded hover:ring-2 hover:ring-[#5865f2] transition-all ${
+                            editData.avatar_url === avatarUrl ? "ring-2 ring-[#5865f2]" : ""
+                          }`}
+                        >
+                          <img 
+                            src={avatarUrl} 
+                            alt={`Avatar ${index + 1}`}
+                            className="w-full h-full rounded"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Status edit */}
                 <div>
-                  <label className="text-[10px] font-bold text-white/60 uppercase tracking-wider">
+                  <label htmlFor="edit-status" className="text-[10px] font-bold text-white/60 uppercase tracking-wider">
                     Statut
                   </label>
                   <select
+                    id="edit-status"
                     value={editData.status}
                     onChange={(e) => setEditData({ ...editData, status: e.target.value as UserStatus })}
                     className="w-full mt-1 px-3 py-2 bg-[#1e1f22] border border-[#3f4147] rounded text-white text-sm focus:outline-none focus:border-[#5865f2]"
@@ -203,9 +251,10 @@ export default function ProfileCard({ user, onClose, onUpdate }: ProfileCardProp
                 <button
                   onClick={() => {
                     setIsEditing(false);
+                    setShowAvatarPicker(false);
                     setEditData({
                       username: user.username,
-                      avatar_url: user.avatar_url || "",
+                      avatar_url: normalizeAvatarUrl(user.avatar_url) || "",
                       status: currentStatus,
                     });
                     setError(null);

@@ -1,8 +1,16 @@
+use rand::Rng;
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::models::{AuthResponse, LoginPayload, SignupPayload, User, UserStatus};
 use crate::services::{create_token, hash_password, verify_password};
+
+/// Génère une URL d'avatar aléatoire parmi les 100 avatars
+fn generate_random_avatar() -> String {
+    let mut rng = rand::rng();
+    let avatar_num: u32 = rng.random_range(1..=100);
+    format!("/avatars/avatar_{:03}.png", avatar_num)
+}
 
 /// Erreurs d'authentification
 #[derive(Debug, thiserror::Error)]
@@ -38,11 +46,14 @@ pub async fn signup(
     // Hasher le mot de passe
     let password_hash = hash_password(&payload.password)?;
 
+    // Générer un avatar aléatoire
+    let avatar_url = generate_random_avatar();
+
     // Créer l'utilisateur
     let user = sqlx::query_as::<_, User>(
         r#"
-        INSERT INTO users (id, email, password_hash, username, status, created_at)
-        VALUES ($1, $2, $3, $4, $5, NOW())
+        INSERT INTO users (id, email, password_hash, username, avatar_url, status, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, NOW())
         RETURNING id, email, password_hash, username, avatar_url, status, created_at
         "#,
     )
@@ -50,6 +61,7 @@ pub async fn signup(
     .bind(&payload.email)
     .bind(&password_hash)
     .bind(&payload.username)
+    .bind(&avatar_url)
     .bind(UserStatus::Online)
     .fetch_one(pool)
     .await?;

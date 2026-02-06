@@ -7,6 +7,43 @@ import ProfileCard from "@/components/ProfileCard";
 import { User } from "@/lib/api-server";
 
 /**
+ * Normalise le chemin d'avatar (ancien format → nouveau format)
+ */
+function normalizeAvatarUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  // Convertit l'ancien chemin vers le nouveau
+  if (url.includes('/space_invaders_avatars/space_invader_')) {
+    return url
+      .replace('/space_invaders_avatars/', '/avatars/')
+      .replace('space_invader_', 'avatar_');
+  }
+  return url;
+}
+
+/**
+ * Génère une URL d'avatar déterministe basée sur un UUID
+ * Utilise le premier caractère hexa pour choisir parmi les 100 avatars
+ */
+function getAvatarFromId(id: string): string {
+  // Prend les 2 premiers caractères hexa et les convertit en nombre (0-255)
+  const hex = id.replace(/-/g, '').slice(0, 2);
+  const num = parseInt(hex, 16);
+  // Map sur 1-100
+  const avatarNum = (num % 100) + 1;
+  return `/avatars/avatar_${String(avatarNum).padStart(3, '0')}.png`;
+}
+
+/**
+ * Retourne l'avatar approprié : si c'est l'utilisateur connecté, utilise son avatar réel
+ */
+function getAvatar(userId: string, currentUser: User | null): string {
+  if (currentUser && userId === currentUser.id) {
+    return normalizeAvatarUrl(currentUser.avatar_url) || getAvatarFromId(userId);
+  }
+  return getAvatarFromId(userId);
+}
+
+/**
  * Page principale - Design Original Cyberpunk
  * Layout: LEFT SIDEBAR (260px) | CENTER CHAT | RIGHT SIDEBAR (260px)
  */
@@ -104,11 +141,19 @@ export default function Home() {
           className="flex items-center gap-2 mb-4 p-2 bg-black/30 rounded-lg border border-[#4fdfff]/30 hover:bg-[#4fdfff]/10 hover:border-[#4fdfff]/50 transition-all cursor-pointer w-full text-left"
         >
           <div className="relative">
-            <div className="w-8 h-8 rounded-full bg-[#4fdfff]/20 border border-[#4fdfff]/50 flex items-center justify-center">
-              <span className="text-[#4fdfff] text-xs font-bold">
-                {(currentUser || user)?.username?.charAt(0).toUpperCase() || "?"}
-              </span>
-            </div>
+            {(currentUser || user)?.avatar_url ? (
+              <img 
+                src={normalizeAvatarUrl((currentUser || user)?.avatar_url) || ''} 
+                alt="Avatar" 
+                className="w-8 h-8 rounded-full object-cover border border-[#4fdfff]/50"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-[#4fdfff]/20 border border-[#4fdfff]/50 flex items-center justify-center">
+                <span className="text-[#4fdfff] text-xs font-bold">
+                  {(currentUser || user)?.username?.charAt(0).toUpperCase() || "?"}
+                </span>
+              </div>
+            )}
             {/* Status indicator */}
             <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[rgba(20,20,20,0.85)] rounded-full ${
               (currentUser || user)?.status?.toLowerCase() === "online" ? "bg-green-500" :
@@ -260,11 +305,11 @@ export default function Home() {
               <div className="space-y-3">
                 {messages.map((msg) => (
                   <div key={msg.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4fdfff]/30 to-[#ff3333]/20 border-2 border-[#4fdfff]/50 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[#4fdfff] font-bold">
-                        {msg.username.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                    <img 
+                      src={getAvatar(msg.author_id, currentUser || user)} 
+                      alt={msg.username}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-[#4fdfff]/50 flex-shrink-0"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2">
                         <span className="font-bold text-[#4fdfff]">
@@ -343,9 +388,11 @@ export default function Home() {
                       className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors"
                     >
                       <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff3333]/30 to-[#4fdfff]/20 border-2 border-[#ff3333]/50 flex items-center justify-center">
-                          <span className="text-[#ff3333] text-xs font-bold">U</span>
-                        </div>
+                        <img 
+                          src={getAvatar(member.user_id, currentUser || user)} 
+                          alt="Owner"
+                          className="w-8 h-8 rounded-full object-cover border-2 border-[#ff3333]/50"
+                        />
                         <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[rgba(20,20,20,0.85)] rounded-full" />
                       </div>
                       <span className="text-sm text-white/80 truncate">
@@ -370,9 +417,11 @@ export default function Home() {
                       className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors"
                     >
                       <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-[#4fdfff]/10 border border-[#4fdfff]/30 flex items-center justify-center">
-                          <span className="text-[#4fdfff] text-xs font-bold">U</span>
-                        </div>
+                        <img 
+                          src={getAvatar(member.user_id, currentUser || user)} 
+                          alt="Member"
+                          className="w-8 h-8 rounded-full object-cover border border-[#4fdfff]/30"
+                        />
                         <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gray-500 border-2 border-[rgba(20,20,20,0.85)] rounded-full" />
                       </div>
                       <span className="text-sm text-white/60 truncate">
