@@ -139,3 +139,16 @@ export async function sendMessage(channelId: string, content: string): Promise<M
   });
 }
 
+export interface UpdateProfilePayload {
+  username?: string;
+  avatar_url?: string;
+  status?: "online" | "offline" | "dnd" | "invisible";
+}
+
+export async function updateMe(payload: UpdateProfilePayload): Promise<User> {
+  return fetchApi<User>("/me", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+

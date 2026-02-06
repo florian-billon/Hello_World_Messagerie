@@ -3,6 +3,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { logout } from "@/lib/auth/actions";
 import { useServers, useChannels, useMessages, useMembers, useAuth } from "@/hooks";
+import ProfileCard from "@/components/ProfileCard";
+import { User } from "@/lib/api-server";
 
 /**
  * Page principale - Design Original Cyberpunk
@@ -31,6 +33,13 @@ export default function Home() {
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState("");
   const [messageInput, setMessageInput] = useState("");
+  const [showProfile, setShowProfile] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  // Initialize currentUser from useAuth
+  if (user && !currentUser) {
+    setCurrentUser(user as User);
+  }
 
   // Style des boutons action (rouge + bordure cyan)
   const actionBtn = "w-full p-[10px] bg-[#a00000] border-2 border-[#4fdfff] text-white font-bold cursor-pointer rounded-lg text-[13px] uppercase transition-all duration-300 hover:bg-[#c00000] hover:shadow-[0_0_12px_rgba(79,223,255,0.8)] hover:scale-[1.02] active:scale-[0.98]";
@@ -89,27 +98,44 @@ export default function Home() {
           className="max-w-full mb-5 drop-shadow-[0_0_10px_rgba(79,223,255,0.5)] mx-auto"
         />
 
-        {/* User info */}
-        <div className="flex items-center gap-2 mb-4 p-2 bg-black/30 rounded-lg border border-[#4fdfff]/30">
-          <div className="w-8 h-8 rounded-full bg-[#4fdfff]/20 border border-[#4fdfff]/50 flex items-center justify-center">
-            <span className="text-[#4fdfff] text-xs font-bold">
-              {user?.username?.charAt(0).toUpperCase() || "?"}
-            </span>
+        {/* User info - clickable to open profile */}
+        <button
+          onClick={() => setShowProfile(true)}
+          className="flex items-center gap-2 mb-4 p-2 bg-black/30 rounded-lg border border-[#4fdfff]/30 hover:bg-[#4fdfff]/10 hover:border-[#4fdfff]/50 transition-all cursor-pointer w-full text-left"
+        >
+          <div className="relative">
+            <div className="w-8 h-8 rounded-full bg-[#4fdfff]/20 border border-[#4fdfff]/50 flex items-center justify-center">
+              <span className="text-[#4fdfff] text-xs font-bold">
+                {(currentUser || user)?.username?.charAt(0).toUpperCase() || "?"}
+              </span>
+            </div>
+            {/* Status indicator */}
+            <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[rgba(20,20,20,0.85)] rounded-full ${
+              (currentUser || user)?.status?.toLowerCase() === "online" ? "bg-green-500" :
+              (currentUser || user)?.status?.toLowerCase() === "dnd" ? "bg-red-500" :
+              (currentUser || user)?.status?.toLowerCase() === "invisible" ? "bg-gray-400" :
+              "bg-gray-500"
+            }`} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user?.username || "Guest"}</p>
-            <p className="text-[10px] text-[#4fdfff] font-mono">CONNECTED</p>
+            <p className="text-sm font-medium text-white truncate">{(currentUser || user)?.username || "Guest"}</p>
+            <p className="text-[10px] text-[#4fdfff] font-mono uppercase">
+              {(currentUser || user)?.status || "CONNECTED"}
+            </p>
           </div>
-          <button
-            onClick={() => logout()}
-            className="p-1.5 text-[#ff3333] hover:bg-[#ff3333]/20 rounded transition-colors"
-            title="Deconnexion"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
-        </div>
+        </button>
+        
+        {/* Logout button */}
+        <button
+          onClick={() => logout()}
+          className="flex items-center gap-2 mb-4 p-2 text-[#ff3333] hover:bg-[#ff3333]/20 rounded-lg transition-colors w-full"
+          title="Déconnexion"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span className="text-xs font-bold uppercase tracking-wider">Déconnexion</span>
+        </button>
 
         {/* Action buttons */}
         <div className="flex flex-col gap-[10px] mb-4">
@@ -463,6 +489,15 @@ export default function Home() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* ========== MODAL PROFILE CARD ========== */}
+      {showProfile && (currentUser || user) && (
+        <ProfileCard
+          user={(currentUser || user) as User}
+          onClose={() => setShowProfile(false)}
+          onUpdate={(updatedUser) => setCurrentUser(updatedUser)}
+        />
       )}
     </main>
   );
