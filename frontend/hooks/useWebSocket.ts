@@ -30,8 +30,13 @@ export function useWebSocket() {
         }
       }
       
+      console.log("[useWebSocket] Token found:", token ? "YES" : "NO");
+      console.log("[useWebSocket] Attempting connection to:", API_URL);
+      
       if (token) {
         gateway.connect(token);
+      } else {
+        console.warn("[useWebSocket] No token found, cannot connect to WebSocket");
       }
     };
 

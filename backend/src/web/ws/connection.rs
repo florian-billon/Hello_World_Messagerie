@@ -103,6 +103,7 @@ impl WsConnection {
             while let Some(msg) = receiver.next().await {
                 match msg {
                     Ok(Message::Text(text)) => {
+                        tracing::debug!("[WS] Received text message from {}: {}", conn_id_clone, &text[..text.len().min(100)]);
                         if text.len() > MAX_MESSAGE_SIZE {
                             tracing::warn!("[WS] Message too large from {}", conn_id_clone);
                             continue;
@@ -111,6 +112,7 @@ impl WsConnection {
                         // Parser l'événement client
                         match ClientEvent::from_json(&text) {
                             Ok(event) => {
+                                tracing::debug!("[WS] Parsed event from {}: {:?}", conn_id_clone, event);
                                 // Envoyer au handler principal via channel
                                 if tx.send((conn_id_clone, event)).await.is_err() {
                                     break; // Handler fermé
@@ -150,20 +152,25 @@ impl WsConnection {
             drop(error_tx_clone); // Fermer le channel pour signaler la fin
         });
 
-        // Attendre la fin d'un des deux loops
-        tokio::select! {
-            _ = &mut write_task => {
-                read_task.abort();
+        // Spawn une tâche pour nettoyer quand les loops se terminent
+        let hub_cleanup = hub.clone();
+        tokio::spawn(async move {
+            // Attendre la fin d'un des deux loops
+            tokio::select! {
+                _ = &mut write_task => {
+                    read_task.abort();
+                }
+                _ = &mut read_task => {
+                    write_task.abort();
+                }
             }
-            _ = &mut read_task => {
-                write_task.abort();
-            }
-        }
 
-        // Nettoyer la connexion
-        hub.unregister(conn_id, user_id).await;
-        tracing::info!("[WS] Connection {} closed", conn_id);
+            // Nettoyer la connexion
+            hub_cleanup.unregister(conn_id, user_id).await;
+            tracing::info!("[WS] Connection {} closed", conn_id);
+        });
 
+        // Retourner le Receiver immédiatement pendant que les tâches tournent
         rx
     }
 

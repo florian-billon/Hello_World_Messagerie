@@ -76,15 +76,19 @@ export class Gateway {
         this.reconnectAttempts = 0;
         this.reconnectDelay = RECONNECT_DELAY_INITIAL;
 
-        // Envoyer IDENTIFY immédiatement
+        // Envoyer IDENTIFY après un court délai pour s'assurer que le WebSocket est vraiment prêt
         if (this.token) {
-          this.send({ op: "IDENTIFY", d: { token: this.token } });
+          setTimeout(() => {
+            console.log("[Gateway] Sending IDENTIFY, readyState:", this.ws?.readyState);
+            this.send({ op: "IDENTIFY", d: { token: this.token } });
+          }, 100);
         }
       };
 
       this.ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data) as ServerEvent;
+          console.log("[Gateway] Received:", data.op);
           this.handleEvent(data);
         } catch (e) {
           console.error("[Gateway] Failed to parse message:", e);
@@ -95,8 +99,8 @@ export class Gateway {
         console.error("[Gateway] WebSocket error:", error);
       };
 
-      this.ws.onclose = () => {
-        console.log("[Gateway] Disconnected");
+      this.ws.onclose = (event) => {
+        console.log("[Gateway] Disconnected, code:", event.code, "reason:", event.reason);
         this.state = "disconnected";
         this.stopHeartbeat();
 

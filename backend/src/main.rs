@@ -53,6 +53,14 @@ async fn get_ws_metrics(State(state): State<AppState>) -> Json<MetricsSnapshot> 
 async fn main() {
     dotenvy::dotenv().ok();
 
+    // Initialiser tracing pour les logs
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"))
+        )
+        .init();
+
     let database_url = std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5433/helloworld".to_string());
     let jwt_secret = std::env::var("JWT_SECRET")
