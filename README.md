@@ -1,5 +1,6 @@
 # Epitech - Pre Msc
 
+
 ## Introduction
 
 Hello World is a full-stack real-time messaging application built with a Rust backend (Axum) and a Next.js frontend. It features server-based chat rooms, channels, member management, and JWT authentication.
