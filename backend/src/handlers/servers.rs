@@ -85,14 +85,30 @@ pub async fn list_members(
     State(state): State<AppState>,
     ctx: Ctx,
     Path(id): Path<Uuid>,
-) -> Result<Json<Vec<ServerMember>>> {
+) -> Result<Json<Vec<crate::models::ServerMemberWithUser>>> {
     let member = services::get_member(&state.server_repo, id, ctx.user_id()).await?;
     if member.is_none() {
         return Err(crate::Error::ServerForbidden);
     }
 
     let members = services::list_members(&state.server_repo, id).await?;
-    Ok(Json(members))
+    
+    // Enrichir avec les infos utilisateur
+    let mut members_with_user = Vec::new();
+    for member in members {
+        if let Ok(Some(user)) = state.user_repo.find_by_id(member.user_id).await {
+            members_with_user.push(crate::models::ServerMemberWithUser {
+                server_id: member.server_id,
+                user_id: member.user_id,
+                role: member.role,
+                joined_at: member.joined_at,
+                username: user.username,
+                avatar_url: user.avatar_url,
+            });
+        }
+    }
+    
+    Ok(Json(members_with_user))
 }
 
 pub async fn update_member_role(

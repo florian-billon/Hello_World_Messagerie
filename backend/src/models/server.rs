@@ -29,6 +29,16 @@ pub struct ServerMember {
     pub joined_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct ServerMemberWithUser {
+    pub server_id: Uuid,
+    pub user_id: Uuid,
+    pub role: MemberRole,
+    pub joined_at: DateTime<Utc>,
+    pub username: String,
+    pub avatar_url: Option<String>,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct CreateServerPayload {
     pub name: String,

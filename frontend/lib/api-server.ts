@@ -106,6 +106,8 @@ export interface ServerMember {
   user_id: string;
   role: string;
   joined_at: string;
+  username: string;
+  avatar_url?: string;
 }
 
 export interface User {

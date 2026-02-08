@@ -424,7 +424,6 @@ export default function Home() {
                     {members
                       .filter((m) => m.role === "Owner")
                       .map((member) => {
-                        const memberUser = member.user_id === (currentUser || user)?.id ? (currentUser || user) : null;
                         return (
                           <div
                             key={member.user_id}
@@ -432,14 +431,14 @@ export default function Home() {
                           >
                             <div className="relative">
                               <img 
-                                src={getAvatar(member.user_id, currentUser || user)} 
+                                src={getAvatar(member.user_id, member)} 
                                 alt="Owner"
                                 className="w-8 h-8 rounded-full object-cover border border-[#ff3333]/50"
                               />
                               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-[rgba(5,10,15,0.95)] rounded-full" />
                             </div>
                             <span className="text-sm text-white/90 truncate">
-                              {memberUser?.username || member.user_id.slice(0, 8) + "..."}
+                              {member.username}
                             </span>
                           </div>
                         );
@@ -456,7 +455,6 @@ export default function Home() {
                     {members
                       .filter((m) => m.role !== "Owner")
                       .map((member) => {
-                        const memberUser = member.user_id === (currentUser || user)?.id ? (currentUser || user) : null;
                         return (
                           <div
                             key={member.user_id}
@@ -464,14 +462,14 @@ export default function Home() {
                           >
                             <div className="relative">
                               <img 
-                                src={getAvatar(member.user_id, currentUser || user)} 
+                                src={getAvatar(member.user_id, member)} 
                                 alt="Member"
                                 className="w-8 h-8 rounded-full object-cover border border-[#4fdfff]/30"
                               />
                               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gray-500 border-2 border-[rgba(5,10,15,0.95)] rounded-full" />
                             </div>
                             <span className="text-sm text-white/70 truncate">
-                              {memberUser?.username || member.user_id.slice(0, 8) + "..."}
+                              {member.username}
                             </span>
                           </div>
                         );
