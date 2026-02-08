@@ -1,14 +1,17 @@
+use rand::Rng;
 use crate::{models::ServerMember, AppState, Error, Result};
 use uuid::Uuid;
 
 use crate::models::{CreateInvitePayload, InviteResponse, MemberRole};
 
 fn gen_code(len: usize) -> String {
-    use rand::{distributions::Alphanumeric, Rng};
-    rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(len)
-        .map(char::from)
+    const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let mut rng = rand::thread_rng();
+    (0..len)
+        .map(|_| {
+            let idx = rng.gen_range(0..CHARS.len());
+            CHARS[idx] as char
+        })
         .collect()
 }
 

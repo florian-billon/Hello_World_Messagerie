@@ -97,11 +97,6 @@ async fn main() {
         server_repo,
         channel_repo,
         message_repo,
-<<<<<<< HEAD
-        invite_repo,
-        ws_hub,
-        ws_metrics,
-=======
         invite_repo,
         ws_hub,
         ws_metrics,
