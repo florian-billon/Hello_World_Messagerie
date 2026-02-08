@@ -1,56 +1,18 @@
 "use client";
-import { useState } from "react";
-import React from "react";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { logout } from "@/lib/auth/actions";
 import { useServers, useChannels, useMessages, useMembers, useAuth } from "@/hooks";
 import ProfileCard from "@/components/ProfileCard";
+import InviteModal from "@/modals/InviteModal";
 import { User } from "@/lib/api-server";
-import Button from "@/components/ui/Button";
+import MemberSidebar from "@/components/layout/MemberSidebar";
+import { normalizeAvatarUrl, getAvatar } from "@/lib/avatar";
 
-/**
- * Normalise le chemin d'avatar (ancien format → nouveau format)
- */
-function normalizeAvatarUrl(url: string | null | undefined): string | null {
-  if (!url) return null;
-  // Convertit l'ancien chemin vers le nouveau
-  if (url.includes('/space_invaders_avatars/space_invader_')) {
-    return url
-      .replace('/space_invaders_avatars/', '/avatars/')
-      .replace('space_invader_', 'avatar_');
-  }
-  return url;
-}
-
-/**
- * Génère une URL d'avatar déterministe basée sur un UUID
- * Utilise le premier caractère hexa pour choisir parmi les 100 avatars
- */
-function getAvatarFromId(id: string): string {
-  // Prend les 2 premiers caractères hexa et les convertit en nombre (0-255)
-  const hex = id.replace(/-/g, '').slice(0, 2);
-  const num = parseInt(hex, 16);
-  // Map sur 1-100
-  const avatarNum = (num % 100) + 1;
-  return `/avatars/avatar_${String(avatarNum).padStart(3, '0')}.png`;
-}
-
-/**
- * Retourne l'avatar approprié : si c'est l'utilisateur connecté, utilise son avatar réel
- */
-function getAvatar(userId: string, currentUser: User | null): string {
-  if (currentUser && userId === currentUser.id) {
-    return normalizeAvatarUrl(currentUser.avatar_url) || getAvatarFromId(userId);
-  }
-  return getAvatarFromId(userId);
-}
-
-/**
- * Page principale - Design Moderne Cyberpunk
- * Layout: SERVER SIDEBAR (72px) | CHANNEL SIDEBAR (240px) | CHAT CENTER | MEMBERS SIDEBAR (240px)
- */
 export default function Home() {
   const { user } = useAuth();
+
   const {
     servers,
     selectedServer,
@@ -60,12 +22,20 @@ export default function Home() {
     error: serversError,
   } = useServers();
 
-  const { channels, selectedChannel, selectChannel, createChannel, loading: channelsLoading, error: channelsError } = useChannels(
-    selectedServer?.id ?? null
+  const {
+    channels,
+    selectedChannel,
+    selectChannel,
+    createChannel,
+    loading: channelsLoading,
+    error: channelsError,
+  } = useChannels(selectedServer?.id ?? null);
+
+  const { messages, sendMessage, loading: messagesLoading, error: messagesError } = useMessages(
+    selectedChannel?.id ?? null
   );
 
-  const { messages, sendMessage, loading: messagesLoading, error: messagesError, typingUsers, typingStart, typingStop } = useMessages(selectedChannel?.id ?? null);
-  const { members, getUserStatus } = useMembers(selectedServer?.id ?? null);
+  const { members } = useMembers(selectedServer?.id ?? null);
 
   const [showCreateServer, setShowCreateServer] = useState(false);
   const [newServerName, setNewServerName] = useState("");
@@ -74,26 +44,16 @@ export default function Home() {
   const [messageInput, setMessageInput] = useState("");
   const [showProfile, setShowProfile] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const typingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Initialize currentUser from useAuth
-  if (user && !currentUser) {
-    setCurrentUser(user as User);
-  }
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
-  // Cleanup typing timeout quand le channel change
-  React.useEffect(() => {
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-        typingTimeoutRef.current = null;
-      }
-    };
-  }, [selectedChannel?.id]);
+  useEffect(() => {
+    if (user) setCurrentUser(user as User);
+  }, [user]);
 
-  // Style des boutons action (rouge + bordure cyan)
+  const actionBtn =
+    "w-full p-[10px] bg-[#a00000] border-2 border-[#4fdfff] text-white font-bold cursor-pointer rounded-lg text-[13px] uppercase transition-all duration-300 hover:bg-[#c00000] hover:shadow-[0_0_12px_rgba(79,223,255,0.8)] hover:scale-[1.02] active:scale-[0.98]";
 
-  // Handlers
   const handleCreateServer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newServerName.trim()) return;
@@ -115,46 +75,8 @@ export default function Home() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim()) return;
-    
-    // Arrêter le typing indicator
-    if (selectedChannel && typingStop) {
-      typingStop(selectedChannel.id);
-    }
-    
     await sendMessage(messageInput.trim());
     setMessageInput("");
-    
-    // Nettoyer le timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
-  };
-
-  const handleMessageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setMessageInput(value);
-    
-    if (!selectedChannel || !typingStart || !typingStop) return;
-    
-    // Nettoyer le timeout précédent
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    
-    if (value.trim().length > 0) {
-      // Démarrer le typing indicator
-      typingStart(selectedChannel.id);
-      
-      // Arrêter automatiquement après 3 secondes d'inactivité
-      typingTimeoutRef.current = setTimeout(() => {
-        typingStop(selectedChannel.id);
-        typingTimeoutRef.current = null;
-      }, 3000);
-    } else {
-      // Arrêter si l'input est vide
-      typingStop(selectedChannel.id);
-    }
   };
 
   if (serversLoading) {
@@ -171,408 +93,272 @@ export default function Home() {
   }
 
   return (
-    <main className="flex w-full h-screen">
-      
-      {/* ========== SERVER SIDEBAR (72px) - Compacte avec icônes circulaires ========== */}
-      <aside className="w-[72px] bg-[rgba(0,0,0,0.95)] border-r border-[#4fdfff]/20 flex flex-col items-center py-3 gap-2">
-        {/* Logo */}
+    <main className="flex w-full h-screen gap-2 p-2">
+      {/* ========== LEFT SIDEBAR ========== */}
+      <aside
+        className="w-[260px] p-5 bg-[rgba(20,20,20,0.85)] backdrop-blur-[12px] flex flex-col border-r-2 border-[#4fdfff] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-fade-in"
+        style={{ animationDelay: "0.1s" }}
+      >
+        <Image
+          src="/logo.png"
+          alt="Hello World logo"
+          width={150}
+          height={150}
+          className="max-w-full mb-5 drop-shadow-[0_0_10px_rgba(79,223,255,0.5)] mx-auto"
+        />
+
         <button
-          onClick={() => selectServer(null)}
-          className="w-12 h-12 rounded-2xl bg-[#4fdfff]/10 border border-[#4fdfff]/50 flex items-center justify-center mb-2 hover:rounded-xl hover:bg-[#4fdfff]/20 transition-all cursor-pointer group"
-          title="Hello World"
+          onClick={() => setShowProfile(true)}
+          className="flex items-center gap-2 mb-4 p-2 bg-black/30 rounded-lg border border-[#4fdfff]/30 hover:bg-[#4fdfff]/10 hover:border-[#4fdfff]/50 transition-all cursor-pointer w-full text-left"
         >
-          <Image
-            src="/logo.png"
-            alt="HW"
-            width={32}
-            height={32}
-            className="group-hover:scale-110 transition-transform"
-          />
-        </button>
-
-        <div className="w-8 h-[2px] bg-[#4fdfff]/20 rounded-full" />
-
-        {/* Server list */}
-        <div className="flex-1 w-full overflow-y-auto flex flex-col items-center gap-2 py-2">
-          {servers.map((server) => (
-            <button
-              key={server.id}
-              onClick={() => selectServer(server)}
-              className={`w-12 h-12 rounded-[24px] flex items-center justify-center text-lg font-bold transition-all duration-200 relative group ${
-                selectedServer?.id === server.id
-                  ? "bg-[#4fdfff] text-black rounded-xl shadow-[0_0_12px_rgba(79,223,255,0.6)]"
-                  : "bg-[rgba(20,30,40,0.8)] text-[#4fdfff] hover:bg-[#4fdfff]/20 hover:rounded-xl"
-              }`}
-              title={server.name}
-            >
-              {server.name.charAt(0).toUpperCase()}
-              {/* Indicator bar */}
-              <span
-                className={`absolute left-0 w-1 bg-[#4fdfff] rounded-r transition-all ${
-                  selectedServer?.id === server.id ? "h-10" : "h-0 group-hover:h-5"
-                }`}
+          <div className="relative">
+            {(currentUser || user)?.avatar_url ? (
+              <img
+                src={normalizeAvatarUrl((currentUser || user)?.avatar_url) || ""}
+                alt="Avatar"
+                className="w-8 h-8 rounded-full object-cover border border-[#4fdfff]/50"
               />
-            </button>
-          ))}
-        </div>
-
-        {/* Add server button */}
-        <button
-          onClick={() => setShowCreateServer(true)}
-          className="w-12 h-12 rounded-[24px] bg-[rgba(20,30,40,0.8)] border border-dashed border-[#4fdfff]/30 flex items-center justify-center text-[#4fdfff] hover:bg-[#4fdfff]/10 hover:border-[#4fdfff] hover:rounded-xl transition-all group"
-          title="Créer un serveur"
-        >
-          <span className="text-2xl group-hover:rotate-90 transition-transform">+</span>
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-[#4fdfff]/20 border border-[#4fdfff]/50 flex items-center justify-center">
+                <span className="text-[#4fdfff] text-xs font-bold">
+                  {(currentUser || user)?.username?.charAt(0).toUpperCase() || "?"}
+                </span>
+              </div>
+            )}
+            <span
+              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[rgba(20,20,20,0.85)] rounded-full ${(currentUser || user)?.status?.toLowerCase() === "online"
+                ? "bg-green-500"
+                : (currentUser || user)?.status?.toLowerCase() === "dnd"
+                  ? "bg-red-500"
+                  : (currentUser || user)?.status?.toLowerCase() === "invisible"
+                    ? "bg-gray-400"
+                    : "bg-gray-500"
+                }`}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">
+              {(currentUser || user)?.username || "Guest"}
+            </p>
+            <p className="text-[10px] text-[#4fdfff] font-mono uppercase">
+              {(currentUser || user)?.status || "CONNECTED"}
+            </p>
+          </div>
         </button>
 
-        {/* Logout */}
         <button
           onClick={() => logout()}
-          className="w-12 h-12 rounded-[24px] bg-[rgba(40,10,10,0.8)] flex items-center justify-center text-[#ff3333] hover:bg-[#ff3333]/20 hover:rounded-xl transition-all mt-2"
+          className="flex items-center gap-2 mb-4 p-2 text-[#ff3333] hover:bg-[#ff3333]/20 rounded-lg transition-colors w-full"
           title="Déconnexion"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
           </svg>
+          <span className="text-xs font-bold uppercase tracking-wider">Déconnexion</span>
         </button>
-      </aside>
 
-      {/* ========== CHANNEL SIDEBAR (240px) ========== */}
-      {selectedServer ? (
-        <aside className="w-60 bg-[rgba(5,10,15,0.95)] border-r border-[#4fdfff]/20 flex flex-col">
-          {/* Server header */}
-          <div className="h-12 px-4 flex items-center border-b border-[#4fdfff]/30 shadow-lg bg-[rgba(0,0,0,0.3)]">
-            <h2 className="font-bold text-white truncate flex-1">{selectedServer.name}</h2>
-            <span className="text-[#4fdfff] text-xs font-mono">▼</span>
-          </div>
-
-          {/* Channels */}
-          <div className="flex-1 overflow-y-auto p-2">
-            <div className="flex items-center justify-between px-2 mb-2">
-              <span className="text-[10px] font-bold text-white/50 tracking-widest uppercase">
-                CHANNELS TEXTUELS
-              </span>
-              <button
-                onClick={() => setShowCreateChannel(true)}
-                className="text-white/50 hover:text-[#4fdfff] transition-colors text-lg font-bold"
-                title="Créer un channel"
-              >
-                +
-              </button>
-            </div>
-
-            <div className="space-y-[2px]">
-              {channelsLoading ? (
-                <div className="px-2 py-2 text-white/40 text-sm">Chargement...</div>
-              ) : channelsError ? (
-                <div className="px-2 py-2 bg-red-500/20 border border-red-500/50 rounded text-[#ff3333] text-sm">
-                  <div className="flex items-center gap-1 mb-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="font-semibold">Erreur</span>
-                  </div>
-                  {channelsError}
-                </div>
-              ) : channels.length === 0 ? (
-                <div className="px-2 py-2 text-white/40 text-sm italic">Aucun channel</div>
-              ) : (
-                channels.map((channel) => (
-                  <button
-                    key={channel.id}
-                    onClick={() => selectChannel(channel)}
-                    className={`w-full text-left px-2 py-1.5 rounded flex items-center gap-2 transition-colors ${
-                      selectedChannel?.id === channel.id
-                        ? "bg-[#4fdfff]/15 text-white"
-                        : "text-white/60 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    <span className="text-white/40">#</span>
-                    <span className="truncate text-sm">{channel.name}</span>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* User info footer */}
-          <div className="h-14 px-2 flex items-center gap-2 bg-[rgba(0,0,0,0.5)] border-t border-[#4fdfff]/20">
-            <button
-              onClick={() => setShowProfile(true)}
-              className="flex items-center gap-2 flex-1 min-w-0 hover:bg-white/5 rounded p-1 transition-colors"
-            >
-              <div className="relative flex-shrink-0">
-                {(currentUser || user)?.avatar_url ? (
-                  <img 
-                    src={normalizeAvatarUrl((currentUser || user)?.avatar_url) || ''} 
-                    alt="Avatar" 
-                    className="w-8 h-8 rounded-full object-cover border border-[#4fdfff]/50"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-[#4fdfff]/20 border border-[#4fdfff]/50 flex items-center justify-center">
-                    <span className="text-[#4fdfff] text-xs font-bold">
-                      {(currentUser || user)?.username?.charAt(0).toUpperCase() || "?"}
-                    </span>
-                  </div>
-                )}
-                {/* Status indicator */}
-                <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[rgba(5,10,15,0.95)] rounded-full ${
-                  (currentUser || user)?.status?.toLowerCase() === "online" ? "bg-green-500" :
-                  (currentUser || user)?.status?.toLowerCase() === "dnd" ? "bg-red-500" :
-                  (currentUser || user)?.status?.toLowerCase() === "invisible" ? "bg-gray-400" :
-                  "bg-gray-500"
-                }`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{(currentUser || user)?.username || "Guest"}</p>
-                <p className="text-[10px] text-[#4fdfff] font-mono uppercase">
-                  {(currentUser || user)?.status || "CONNECTED"}
-                </p>
-              </div>
-            </button>
-          </div>
-        </aside>
-      ) : (
-        <aside className="w-60 bg-[rgba(5,10,15,0.95)] border-r border-[#4fdfff]/20 flex flex-col items-center justify-center">
-          <p className="text-white/40 text-sm text-center px-4">Sélectionnez un serveur</p>
-        </aside>
-      )}
-
-      {/* ========== CHAT CENTER ========== */}
-      <div className="flex-1 flex flex-col bg-[rgba(10,15,20,0.98)]">
-        {/* Header */}
-        <header className="h-12 px-4 flex items-center border-b border-[#4fdfff]/20 bg-[rgba(0,0,0,0.3)] shadow-sm">
-          <h1 className="text-white font-semibold text-sm flex items-center gap-2">
-            {selectedChannel ? (
-              <>
-                <span className="text-white/40">#</span>
-                <span>{selectedChannel.name}</span>
-              </>
-            ) : selectedServer ? (
-              <>
-                <span className="text-[#4fdfff]">{selectedServer.name}</span>
-                <span className="text-white/40 text-xs font-normal">- Sélectionnez un canal</span>
-              </>
-            ) : (
-              <>
-                <span className="text-[#4fdfff]">HELLO WORLD</span>
-                <span className="text-white/40 text-xs font-normal">- Sélectionnez un serveur</span>
-              </>
-            )}
-          </h1>
-        </header>
-
-        {/* Messages area */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {!selectedChannel ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 rounded-full bg-[#4fdfff]/10 border-2 border-[#4fdfff]/30 flex items-center justify-center mb-6 mx-auto">
-                  <span className="text-5xl text-[#4fdfff]">#</span>
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {selectedServer ? "Sélectionnez un canal" : "Sélectionnez un serveur"}
-                </h2>
-                <p className="text-white/50 text-sm">
-                  {selectedServer ? "Choisissez un canal pour commencer à discuter" : "Choisissez un serveur pour commencer"}
-                </p>
-              </div>
-            </div>
-          ) : messagesLoading ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-8 h-8 border-2 border-[#4fdfff] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-[#4fdfff] text-sm">Chargement des messages...</p>
-              </div>
-            </div>
-          ) : messagesError ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 max-w-md">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <h3 className="text-red-400 font-semibold">Erreur</h3>
-                </div>
-                <p className="text-red-300 text-sm">{messagesError}</p>
-              </div>
-            </div>
-          ) : Array.isArray(messages) && messages.length > 0 ? (
-            <div className="space-y-4">
-              {messages.map((msg) => (
-                <div key={msg.id} className="flex items-start gap-3 px-4 py-2 rounded hover:bg-white/5 transition-colors group">
-                  <img 
-                    src={getAvatar(msg.author_id, currentUser || user)} 
-                    alt={msg.username}
-                    className="w-10 h-10 rounded-full object-cover border border-[#4fdfff]/30 flex-shrink-0 group-hover:border-[#4fdfff]/50 transition-colors"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="font-semibold text-white hover:text-[#4fdfff] transition-colors cursor-pointer">
-                        {msg.username}
-                      </span>
-                      <span className="text-xs text-white/40">
-                        {new Date(msg.created_at).toLocaleTimeString("fr-FR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                    <p className="text-white/90 leading-relaxed break-words">
-                      {msg.content}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              
-              {/* Typing indicator */}
-              {typingUsers && typingUsers.size > 0 && (
-                <div className="px-4 py-2 text-white/60 text-sm italic flex items-center gap-2">
-                  <span className="w-1 h-1 bg-[#4fdfff] rounded-full animate-pulse" />
-                  <span>
-                    {Array.from(typingUsers.values()).length === 1
-                      ? `${Array.from(typingUsers.values())[0]} is typing...`
-                      : Array.from(typingUsers.values()).length === 2
-                      ? `${Array.from(typingUsers.values())[0]} and ${Array.from(typingUsers.values())[1]} are typing...`
-                      : `${Array.from(typingUsers.values()).slice(0, 2).join(", ")} and ${Array.from(typingUsers.values()).length - 2} more are typing...`}
-                  </span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center px-4">
-              <div className="w-20 h-20 rounded-full bg-[#4fdfff]/10 border-2 border-[#4fdfff]/30 flex items-center justify-center mb-4">
-                <span className="text-4xl text-[#4fdfff]">#</span>
-              </div>
-              <h4 className="text-xl font-semibold text-white mb-2">
-                Bienvenue dans #{selectedChannel.name}
-              </h4>
-              <p className="text-white/50 text-sm">
-                C'est le début de ce canal. Envoyez un message pour commencer !
-              </p>
-            </div>
-          )}
+        <div className="flex flex-col gap-[10px] mb-4">
+          <button onClick={() => setShowCreateServer(true)} className={actionBtn}>
+            + CREATE SERVER
+          </button>
         </div>
 
-        {/* Message input */}
-        {selectedChannel && (
-          <footer className="px-4 py-3 border-t border-[#4fdfff]/20 bg-[rgba(0,0,0,0.2)]">
-            <form onSubmit={handleSendMessage}>
-              <input 
-                type="text"
-                value={messageInput}
-                onChange={handleMessageInputChange}
-                placeholder={`Message #${selectedChannel.name}`}
-                className="w-full px-4 py-2.5 bg-[rgba(20,20,20,0.8)] border border-[#4fdfff]/30 rounded-lg text-white placeholder:text-white/40 outline-none focus:border-[#4fdfff] focus:bg-[rgba(20,20,20,0.95)] focus:shadow-[0_0_8px_rgba(79,223,255,0.3)] transition-all"
-              />
-            </form>
-          </footer>
-        )}
-      </div>
+        <nav className="flex-1 overflow-y-auto">
+          <h4 className="text-[12px] tracking-wider uppercase text-[#4fdfff] mt-[15px] mb-[6px] font-bold">
+            SERVERS ({servers.length})
+          </h4>
 
-      {/* ========== MEMBERS SIDEBAR (240px) ========== */}
-      {selectedServer ? (
-        <aside className="w-60 bg-[rgba(5,10,15,0.95)] border-l border-[#4fdfff]/20 flex flex-col">
-          {/* Header */}
-          <div className="h-12 px-4 flex items-center border-b border-[#4fdfff]/20 bg-[rgba(0,0,0,0.3)]">
-            <h3 className="text-xs font-bold text-white/60 uppercase tracking-wider">
-              MEMBRES — {members.length}
-            </h3>
-          </div>
+          {servers.length === 0 ? (
+            <p className="text-[14px] text-white/40 italic">No server yet</p>
+          ) : (
+            <ul className="list-none space-y-1">
+              {servers.map((server) => (
+                <li key={server.id}>
+                  <button
+                    onClick={() => selectServer(server)}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-all ${selectedServer?.id === server.id
+                      ? "bg-[#4fdfff]/20 text-[#4fdfff] border border-[#4fdfff]/50"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                      }`}
+                  >
+                    <span className="text-[14px] font-bold">{server.name}</span>
+                  </button>
 
-          {/* Members list */}
-          <div className="flex-1 overflow-y-auto p-2">
-            {members.length === 0 ? (
-              <p className="text-sm text-white/40 italic px-2">Aucun membre</p>
+                  {selectedServer?.id === server.id && (
+                    <div className="ml-3 mt-1 border-l-2 border-[#4fdfff]/30 pl-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] text-white/50 uppercase tracking-wider">
+                          Channels
+                        </span>
+                        <button
+                          onClick={() => setShowCreateChannel(true)}
+                          className="text-[#4fdfff] hover:text-white text-xs"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      {channelsLoading ? (
+                        <p className="text-[12px] text-white/40">Loading...</p>
+                      ) : channelsError ? (
+                        <p className="text-[12px] text-[#ff3333]">{channelsError}</p>
+                      ) : channels.length === 0 ? (
+                        <p className="text-[12px] text-white/40 italic">No channel</p>
+                      ) : (
+                        channels.map((channel) => (
+                          <button
+                            key={channel.id}
+                            onClick={() => selectChannel(channel)}
+                            className={`w-full text-left px-2 py-1 rounded text-[13px] transition-all flex items-center gap-1 ${selectedChannel?.id === channel.id
+                              ? "text-[#4fdfff] bg-[#4fdfff]/10"
+                              : "text-white/60 hover:text-white/90"
+                              }`}
+                          >
+                            <span className="text-white/40">#</span>
+                            {channel.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </nav>
+      </aside>
+
+      {/* ========== CENTER CHAT ========== */}
+      <div className="flex-1 flex justify-center items-stretch p-0">
+        <section
+          className="w-full max-w-[1100px] flex flex-col bg-[rgba(20,20,20,0.85)] backdrop-blur-[12px] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-fade-in"
+          style={{ animationDelay: "0.2s" }}
+        >
+          <header className="p-5 border-b-2 border-[#4fdfff]">
+            <h1 className="text-white font-bold text-[16px]">
+              {selectedChannel ? (
+                <>
+                  <span className="text-white/40">#</span> {selectedChannel.name}
+                  <span className="text-white/40 ml-3 text-sm font-normal">
+                    in {selectedServer?.name}
+                  </span>
+                </>
+              ) : selectedServer ? (
+                <>
+                  <span className="text-[#ff3b3b]">{selectedServer.name}</span>
+                  <span className="text-white/40 ml-3 text-sm font-normal">
+                    - Select a channel
+                  </span>
+                </>
+              ) : (
+                <>
+                  Welcome to{" "}
+                  <span className="text-[#ff3b3b] font-bold drop-shadow-[0_0_8px_rgba(255,59,59,0.6)]">
+                    HELLO WORLD
+                  </span>{" "}
+                  messaging platform
+                </>
+              )}
+            </h1>
+          </header>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            {!selectedChannel ? (
+              <div className="h-full flex items-center justify-center tracking-[3px]">
+                <div className="text-center">
+                  <p className="text-[#ff3b3b] text-4xl font-bold italic tracking-[6px] mb-4 animate-pulse drop-shadow-[0_0_20px_rgba(255,59,59,0.4)]">
+                    HELLO WORLD
+                  </p>
+                  <p className="text-white/40 text-2xl font-bold uppercase">
+                    {selectedServer ? "SELECT A CHANNEL" : "SELECT A SERVER"}
+                  </p>
+                </div>
+              </div>
+            ) : messagesLoading ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-[#4fdfff] animate-pulse">Loading messages...</p>
+              </div>
+            ) : messagesError ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-[#ff3333]">{messagesError}</p>
+              </div>
+            ) : Array.isArray(messages) && messages.length > 0 ? (
+              <div className="space-y-3">
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <img
+                      src={getAvatar(msg.author_id, currentUser || (user as User | null))}
+                      alt={msg.username}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-[#4fdfff]/50 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-bold text-[#4fdfff]">{msg.username}</span>
+                        <span className="text-[10px] text-white/40 font-mono">
+                          {new Date(msg.created_at).toLocaleTimeString("fr-FR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-white leading-relaxed break-words">{msg.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <>
-                {/* Owners */}
-                {members.filter((m) => m.role === "Owner").length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-[10px] text-[#ff3333] font-bold mb-2 px-2 tracking-wider uppercase">
-                      PROPRIÉTAIRE
-                    </p>
-                    {members
-                      .filter((m) => m.role === "Owner")
-                      .map((member) => {
-                        const memberUser = member.user_id === (currentUser || user)?.id ? (currentUser || user) : null;
-                        return (
-                          <div
-                            key={member.user_id}
-                            className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer transition-colors"
-                          >
-                            <div className="relative">
-                              <img 
-                                src={getAvatar(member.user_id, currentUser || user)} 
-                                alt="Owner"
-                                className="w-8 h-8 rounded-full object-cover border border-[#ff3333]/50"
-                              />
-                              <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[rgba(5,10,15,0.95)] rounded-full ${
-                                getUserStatus(member.user_id) === "online" ? "bg-green-500" :
-                                getUserStatus(member.user_id) === "dnd" ? "bg-red-500" :
-                                getUserStatus(member.user_id) === "invisible" ? "bg-gray-400" :
-                                "bg-gray-500"
-                              }`} />
-                            </div>
-                            <span className="text-sm text-white/90 truncate">
-                              {memberUser?.username || member.user_id.slice(0, 8) + "..."}
-                            </span>
-                          </div>
-                        );
-                      })}
-                  </div>
-                )}
-
-                {/* Regular members */}
-                {members.filter((m) => m.role !== "Owner").length > 0 && (
-                  <div>
-                    <p className="text-[10px] text-white/50 font-bold mb-2 px-2 tracking-wider uppercase">
-                      MEMBRES
-                    </p>
-                    {members
-                      .filter((m) => m.role !== "Owner")
-                      .map((member) => {
-                        const memberUser = member.user_id === (currentUser || user)?.id ? (currentUser || user) : null;
-                        return (
-                          <div
-                            key={member.user_id}
-                            className="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-white/5 cursor-pointer transition-colors"
-                          >
-                            <div className="relative">
-                              <img 
-                                src={getAvatar(member.user_id, currentUser || user)} 
-                                alt="Member"
-                                className="w-8 h-8 rounded-full object-cover border border-[#4fdfff]/30"
-                              />
-                              <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[rgba(5,10,15,0.95)] rounded-full ${
-                                getUserStatus(member.user_id) === "online" ? "bg-green-500" :
-                                getUserStatus(member.user_id) === "dnd" ? "bg-red-500" :
-                                getUserStatus(member.user_id) === "invisible" ? "bg-gray-400" :
-                                "bg-gray-500"
-                              }`} />
-                            </div>
-                            <span className="text-sm text-white/70 truncate">
-                              {memberUser?.username || member.user_id.slice(0, 8) + "..."}
-                            </span>
-                          </div>
-                        );
-                      })}
-                  </div>
-                )}
-              </>
+              <div className="h-full flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 rounded-full bg-[#4fdfff]/10 border-2 border-[#4fdfff]/30 flex items-center justify-center mb-4">
+                  <span className="text-4xl text-[#4fdfff]">#</span>
+                </div>
+                <h4 className="text-xl font-bold text-white mb-2">
+                  Welcome to #{selectedChannel?.name}
+                </h4>
+                <p className="text-white/40 text-sm">This is the beginning. Send a message!</p>
+              </div>
             )}
           </div>
-        </aside>
-      ) : (
-        <aside className="w-60 bg-[rgba(5,10,15,0.95)] border-l border-[#4fdfff]/20 flex flex-col items-center justify-center">
-          <p className="text-white/40 text-sm text-center px-4">Sélectionnez un serveur</p>
-        </aside>
-      )}
+
+          {selectedChannel && (
+            <footer className="p-[15px] border-t-2 border-[#4fdfff]">
+              <form onSubmit={handleSendMessage}>
+                <input
+                  type="text"
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  placeholder={`Message #${selectedChannel.name}`}
+                  className="w-full p-3 bg-[rgba(31,31,31,0.9)] border-2 border-[#4fdfff] text-white font-bold outline-none rounded-lg placeholder:text-white/50 focus:shadow-[0_0_12px_rgba(79,223,255,0.6)] transition-all duration-300"
+                />
+              </form>
+            </footer>
+          )}
+        </section>
+      </div>
+
+      {/* ========== RIGHT SIDEBAR - MEMBERS ========== */}
+      <MemberSidebar
+        selectedServer={selectedServer ?? null}
+        members={members}
+        currentUser={currentUser}
+        authUser={user as User | null}
+        onInviteClick={() => setShowInviteModal(true)}
+      />
 
       {/* ========== MODAL CREATE SERVER ========== */}
       {showCreateServer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCreateServer(false)} />
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowCreateServer(false)}
+          />
           <div className="relative bg-[rgba(20,20,20,0.98)] border-2 border-[#4fdfff] rounded-xl p-6 w-full max-w-md shadow-[0_0_40px_rgba(79,223,255,0.3)]">
             <h2 className="text-xl font-bold text-center text-white mb-1">CREATE SERVER</h2>
             <p className="text-center text-white/50 text-sm mb-6">
@@ -596,24 +382,16 @@ export default function Home() {
                 className="w-full px-4 py-3 bg-black/50 border-2 border-[#4fdfff]/50 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[#4fdfff] focus:shadow-[0_0_10px_rgba(79,223,255,0.3)] mb-6 transition-all"
               />
               <div className="flex gap-3">
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  size="md"
                   onClick={() => setShowCreateServer(false)}
-                  className="flex-1"
+                  className="flex-1 py-2.5 text-white/60 hover:text-white hover:underline transition-colors"
                 >
                   Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  disabled={!newServerName.trim()}
-                  className="flex-1 uppercase"
-                >
+                </button>
+                <button type="submit" disabled={!newServerName.trim()} className={actionBtn}>
                   Create
-                </Button>
+                </button>
               </div>
             </form>
           </div>
@@ -623,7 +401,10 @@ export default function Home() {
       {/* ========== MODAL CREATE CHANNEL ========== */}
       {showCreateChannel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCreateChannel(false)} />
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowCreateChannel(false)}
+          />
           <div className="relative bg-[rgba(20,20,20,0.98)] border-2 border-[#4fdfff] rounded-xl p-6 w-full max-w-md shadow-[0_0_40px_rgba(79,223,255,0.3)]">
             <h2 className="text-xl font-bold text-center text-white mb-1">CREATE CHANNEL</h2>
             <p className="text-center text-white/50 text-sm mb-6">
@@ -634,7 +415,9 @@ export default function Home() {
                 CHANNEL NAME
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">#</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">
+                  #
+                </span>
                 <input
                   type="text"
                   value={newChannelName}
@@ -652,27 +435,29 @@ export default function Home() {
                 >
                   Cancel
                 </button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  disabled={!newChannelName.trim()}
-                  className="flex-1 uppercase"
-                >
+                <button type="submit" disabled={!newChannelName.trim()} className={actionBtn}>
                   Create
-                </Button>
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* ========== MODAL PROFILE CARD ========== */}
+      {/* ========== MODAL PROFILE ========== */}
       {showProfile && (currentUser || user) && (
         <ProfileCard
           user={(currentUser || user) as User}
           onClose={() => setShowProfile(false)}
           onUpdate={(updatedUser) => setCurrentUser(updatedUser)}
+        />
+      )}
+
+      {showInviteModal && selectedServer && (
+        <InviteModal
+          serverId={selectedServer.id}
+          serverName={selectedServer.name}
+          onClose={() => setShowInviteModal(false)}
         />
       )}
     </main>

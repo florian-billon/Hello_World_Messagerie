@@ -16,7 +16,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 # Database - PostgreSQL
-sqlx = { version = "0.8", features = ["runtime-tokio", "tls-rustls", "postgres", "uuid", "chrono"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "uuid", "chrono", "tls-rustls"] }
 
 # Database - MongoDB (messages)
 mongodb = "3"
@@ -32,6 +32,15 @@ uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
 thiserror = "2"
+<<<<<<< HEAD
+rand = "0.9"
+lazy_static = "1.5"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+futures-util = "0.3"
+=======
+rand = "0.8"
+>>>>>>> Invite
 rand = "0.9"
 lazy_static = "1.5"
 tracing = "0.1"
