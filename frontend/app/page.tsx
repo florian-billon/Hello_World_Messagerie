@@ -46,6 +46,13 @@ function getAvatar(userId: string, currentUser: User | null): string {
 }
 
 /**
+ * Génère l'URL d'avatar pour un membre avec avatar_url optionnel
+ */
+function getMemberAvatar(member: { user_id: string; avatar_url?: string }): string {
+  return normalizeAvatarUrl(member.avatar_url) || getAvatarFromId(member.user_id);
+}
+
+/**
  * Page principale - Design Moderne Cyberpunk
  * Layout: SERVER SIDEBAR (72px) | CHANNEL SIDEBAR (240px) | CHAT CENTER | MEMBERS SIDEBAR (240px)
  */
@@ -431,7 +438,7 @@ export default function Home() {
                           >
                             <div className="relative">
                               <img 
-                                src={getAvatar(member.user_id, member)} 
+                                src={getMemberAvatar(member)} 
                                 alt="Owner"
                                 className="w-8 h-8 rounded-full object-cover border border-[#ff3333]/50"
                               />
@@ -462,7 +469,7 @@ export default function Home() {
                           >
                             <div className="relative">
                               <img 
-                                src={getAvatar(member.user_id, member)} 
+                                src={getMemberAvatar(member)} 
                                 alt="Member"
                                 className="w-8 h-8 rounded-full object-cover border border-[#4fdfff]/30"
                               />
