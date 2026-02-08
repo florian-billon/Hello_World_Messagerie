@@ -6,7 +6,6 @@ pub mod messages;
 pub mod password;
 pub mod realtime;
 pub mod servers;
-pub mod invite;
 
 pub use auth::{login, logout, signup};
 pub use channels::{create_channel, delete_channel, get_channel, list_channels, update_channel};

@@ -7,9 +7,9 @@ use crate::services::{create_token, hash_password, verify_password};
 
 /// Génère une URL d'avatar aléatoire parmi les 100 avatars
 fn generate_random_avatar() -> String {
-    // Best of both: use `thread_rng()` from `rand` and prefer `.webp` assets.
-    let mut rng = rand::thread_rng();
-    let avatar_num: u32 = rng.gen_range(1..=100);
+    // Best of both: use `rng()` from `rand` and prefer `.webp` assets.
+    let mut rng = rand::rng();
+    let avatar_num: u32 = rng.random_range(1..=100);
     format!("/avatars/avatar_{:03}.webp", avatar_num)
 }
 

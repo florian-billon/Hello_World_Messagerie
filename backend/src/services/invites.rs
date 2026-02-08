@@ -8,10 +8,10 @@ use crate::repositories::{InviteRepository, ServerRepository};
 /// Génère un code d'invitation unique (8 caractères alphanumériques)
 fn generate_invite_code() -> String {
     const CHARS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     (0..8)
         .map(|_| {
-            let idx = rng.gen_range(0..CHARS.len());
+            let idx = rng.random_range(0..CHARS.len());
             CHARS[idx] as char
         })
         .collect()
@@ -53,7 +53,6 @@ pub async fn create_invite(
         }
     }
 
-    let invite_id = Uuid::new_v4();
     let invite = invite_repo
         .create(
             server_id,
