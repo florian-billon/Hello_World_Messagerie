@@ -65,7 +65,8 @@ CREATE TABLE IF NOT EXISTS invites (
     created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     expires_at TIMESTAMPTZ,
     max_uses INT,
-    uses_count INT NOT NULL DEFAULT 0,
+    uses INT NOT NULL DEFAULT 0,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
