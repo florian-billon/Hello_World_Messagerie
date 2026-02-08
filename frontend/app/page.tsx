@@ -1,11 +1,18 @@
 "use client";
+<<<<<<< HEAD
 import { useState } from "react";
 import React from "react";
+=======
+
+import { useEffect, useState } from "react";
+>>>>>>> Invite
 import Image from "next/image";
 import { logout } from "@/lib/auth/actions";
 import { useServers, useChannels, useMessages, useMembers, useAuth } from "@/hooks";
 import ProfileCard from "@/components/ProfileCard";
+import InviteModal from "@/modals/InviteModal";
 import { User } from "@/lib/api-server";
+<<<<<<< HEAD
 import Button from "@/components/ui/Button";
 
 /**
@@ -49,8 +56,14 @@ function getAvatar(userId: string, currentUser: User | null): string {
  * Page principale - Design Moderne Cyberpunk
  * Layout: SERVER SIDEBAR (72px) | CHANNEL SIDEBAR (240px) | CHAT CENTER | MEMBERS SIDEBAR (240px)
  */
+=======
+import MemberSidebar from "@/components/layout/MemberSidebar";
+import { normalizeAvatarUrl, getAvatar } from "@/lib/avatar";
+
+>>>>>>> Invite
 export default function Home() {
   const { user } = useAuth();
+
   const {
     servers,
     selectedServer,
@@ -60,12 +73,25 @@ export default function Home() {
     error: serversError,
   } = useServers();
 
-  const { channels, selectedChannel, selectChannel, createChannel, loading: channelsLoading, error: channelsError } = useChannels(
-    selectedServer?.id ?? null
+  const {
+    channels,
+    selectedChannel,
+    selectChannel,
+    createChannel,
+    loading: channelsLoading,
+    error: channelsError,
+  } = useChannels(selectedServer?.id ?? null);
+
+  const { messages, sendMessage, loading: messagesLoading, error: messagesError } = useMessages(
+    selectedChannel?.id ?? null
   );
 
+<<<<<<< HEAD
   const { messages, sendMessage, loading: messagesLoading, error: messagesError, typingUsers, typingStart, typingStop } = useMessages(selectedChannel?.id ?? null);
   const { members, getUserStatus } = useMembers(selectedServer?.id ?? null);
+=======
+  const { members } = useMembers(selectedServer?.id ?? null);
+>>>>>>> Invite
 
   const [showCreateServer, setShowCreateServer] = useState(false);
   const [newServerName, setNewServerName] = useState("");
@@ -76,11 +102,9 @@ export default function Home() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const typingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Initialize currentUser from useAuth
-  if (user && !currentUser) {
-    setCurrentUser(user as User);
-  }
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
+<<<<<<< HEAD
   // Cleanup typing timeout quand le channel change
   React.useEffect(() => {
     return () => {
@@ -92,8 +116,15 @@ export default function Home() {
   }, [selectedChannel?.id]);
 
   // Style des boutons action (rouge + bordure cyan)
+=======
+  useEffect(() => {
+    if (user) setCurrentUser(user as User);
+  }, [user]);
 
-  // Handlers
+  const actionBtn =
+    "w-full p-[10px] bg-[#a00000] border-2 border-[#4fdfff] text-white font-bold cursor-pointer rounded-lg text-[13px] uppercase transition-all duration-300 hover:bg-[#c00000] hover:shadow-[0_0_12px_rgba(79,223,255,0.8)] hover:scale-[1.02] active:scale-[0.98]";
+>>>>>>> Invite
+
   const handleCreateServer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newServerName.trim()) return;
@@ -171,16 +202,34 @@ export default function Home() {
   }
 
   return (
+<<<<<<< HEAD
     <main className="flex w-full h-screen">
       
       {/* ========== SERVER SIDEBAR (72px) - Compacte avec icônes circulaires ========== */}
       <aside className="w-[72px] bg-[rgba(0,0,0,0.95)] border-r border-[#4fdfff]/20 flex flex-col items-center py-3 gap-2">
         {/* Logo */}
+=======
+    <main className="flex w-full h-screen gap-2 p-2">
+      {/* ========== LEFT SIDEBAR ========== */}
+      <aside
+        className="w-[260px] p-5 bg-[rgba(20,20,20,0.85)] backdrop-blur-[12px] flex flex-col border-r-2 border-[#4fdfff] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-fade-in"
+        style={{ animationDelay: "0.1s" }}
+      >
+        <Image
+          src="/logo.png"
+          alt="Hello World logo"
+          width={150}
+          height={150}
+          className="max-w-full mb-5 drop-shadow-[0_0_10px_rgba(79,223,255,0.5)] mx-auto"
+        />
+
+>>>>>>> Invite
         <button
           onClick={() => selectServer(null)}
           className="w-12 h-12 rounded-2xl bg-[#4fdfff]/10 border border-[#4fdfff]/50 flex items-center justify-center mb-2 hover:rounded-xl hover:bg-[#4fdfff]/20 transition-all cursor-pointer group"
           title="Hello World"
         >
+<<<<<<< HEAD
           <Image
             src="/logo.png"
             alt="HW"
@@ -286,10 +335,87 @@ export default function Home() {
                         ? "bg-[#4fdfff]/15 text-white"
                         : "text-white/60 hover:bg-white/5 hover:text-white"
                     }`}
+=======
+          <div className="relative">
+            {(currentUser || user)?.avatar_url ? (
+              <img
+                src={normalizeAvatarUrl((currentUser || user)?.avatar_url) || ""}
+                alt="Avatar"
+                className="w-8 h-8 rounded-full object-cover border border-[#4fdfff]/50"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-[#4fdfff]/20 border border-[#4fdfff]/50 flex items-center justify-center">
+                <span className="text-[#4fdfff] text-xs font-bold">
+                  {(currentUser || user)?.username?.charAt(0).toUpperCase() || "?"}
+                </span>
+              </div>
+            )}
+            <span
+              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-[rgba(20,20,20,0.85)] rounded-full ${(currentUser || user)?.status?.toLowerCase() === "online"
+                ? "bg-green-500"
+                : (currentUser || user)?.status?.toLowerCase() === "dnd"
+                  ? "bg-red-500"
+                  : (currentUser || user)?.status?.toLowerCase() === "invisible"
+                    ? "bg-gray-400"
+                    : "bg-gray-500"
+                }`}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">
+              {(currentUser || user)?.username || "Guest"}
+            </p>
+            <p className="text-[10px] text-[#4fdfff] font-mono uppercase">
+              {(currentUser || user)?.status || "CONNECTED"}
+            </p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => logout()}
+          className="flex items-center gap-2 mb-4 p-2 text-[#ff3333] hover:bg-[#ff3333]/20 rounded-lg transition-colors w-full"
+          title="Déconnexion"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+          <span className="text-xs font-bold uppercase tracking-wider">Déconnexion</span>
+        </button>
+
+        <div className="flex flex-col gap-[10px] mb-4">
+          <button onClick={() => setShowCreateServer(true)} className={actionBtn}>
+            + CREATE SERVER
+          </button>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto">
+          <h4 className="text-[12px] tracking-wider uppercase text-[#4fdfff] mt-[15px] mb-[6px] font-bold">
+            SERVERS ({servers.length})
+          </h4>
+
+          {servers.length === 0 ? (
+            <p className="text-[14px] text-white/40 italic">No server yet</p>
+          ) : (
+            <ul className="list-none space-y-1">
+              {servers.map((server) => (
+                <li key={server.id}>
+                  <button
+                    onClick={() => selectServer(server)}
+                    className={`w-full text-left px-3 py-2 rounded-lg transition-all ${selectedServer?.id === server.id
+                      ? "bg-[#4fdfff]/20 text-[#4fdfff] border border-[#4fdfff]/50"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                      }`}
+>>>>>>> Invite
                   >
                     <span className="text-white/40">#</span>
                     <span className="truncate text-sm">{channel.name}</span>
                   </button>
+<<<<<<< HEAD
                 ))
               )}
             </div>
@@ -451,6 +577,159 @@ export default function Home() {
                 C'est le début de ce canal. Envoyez un message pour commencer !
               </p>
             </div>
+=======
+
+                  {selectedServer?.id === server.id && (
+                    <div className="ml-3 mt-1 border-l-2 border-[#4fdfff]/30 pl-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] text-white/50 uppercase tracking-wider">
+                          Channels
+                        </span>
+                        <button
+                          onClick={() => setShowCreateChannel(true)}
+                          className="text-[#4fdfff] hover:text-white text-xs"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      {channelsLoading ? (
+                        <p className="text-[12px] text-white/40">Loading...</p>
+                      ) : channelsError ? (
+                        <p className="text-[12px] text-[#ff3333]">{channelsError}</p>
+                      ) : channels.length === 0 ? (
+                        <p className="text-[12px] text-white/40 italic">No channel</p>
+                      ) : (
+                        channels.map((channel) => (
+                          <button
+                            key={channel.id}
+                            onClick={() => selectChannel(channel)}
+                            className={`w-full text-left px-2 py-1 rounded text-[13px] transition-all flex items-center gap-1 ${selectedChannel?.id === channel.id
+                              ? "text-[#4fdfff] bg-[#4fdfff]/10"
+                              : "text-white/60 hover:text-white/90"
+                              }`}
+                          >
+                            <span className="text-white/40">#</span>
+                            {channel.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </nav>
+      </aside>
+
+      {/* ========== CENTER CHAT ========== */}
+      <div className="flex-1 flex justify-center items-stretch p-0">
+        <section
+          className="w-full max-w-[1100px] flex flex-col bg-[rgba(20,20,20,0.85)] backdrop-blur-[12px] rounded-xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] animate-fade-in"
+          style={{ animationDelay: "0.2s" }}
+        >
+          <header className="p-5 border-b-2 border-[#4fdfff]">
+            <h1 className="text-white font-bold text-[16px]">
+              {selectedChannel ? (
+                <>
+                  <span className="text-white/40">#</span> {selectedChannel.name}
+                  <span className="text-white/40 ml-3 text-sm font-normal">
+                    in {selectedServer?.name}
+                  </span>
+                </>
+              ) : selectedServer ? (
+                <>
+                  <span className="text-[#ff3b3b]">{selectedServer.name}</span>
+                  <span className="text-white/40 ml-3 text-sm font-normal">
+                    - Select a channel
+                  </span>
+                </>
+              ) : (
+                <>
+                  Welcome to{" "}
+                  <span className="text-[#ff3b3b] font-bold drop-shadow-[0_0_8px_rgba(255,59,59,0.6)]">
+                    HELLO WORLD
+                  </span>{" "}
+                  messaging platform
+                </>
+              )}
+            </h1>
+          </header>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            {!selectedChannel ? (
+              <div className="h-full flex items-center justify-center tracking-[3px]">
+                <div className="text-center">
+                  <p className="text-[#ff3b3b] text-4xl font-bold italic tracking-[6px] mb-4 animate-pulse drop-shadow-[0_0_20px_rgba(255,59,59,0.4)]">
+                    HELLO WORLD
+                  </p>
+                  <p className="text-white/40 text-2xl font-bold uppercase">
+                    {selectedServer ? "SELECT A CHANNEL" : "SELECT A SERVER"}
+                  </p>
+                </div>
+              </div>
+            ) : messagesLoading ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-[#4fdfff] animate-pulse">Loading messages...</p>
+              </div>
+            ) : messagesError ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-[#ff3333]">{messagesError}</p>
+              </div>
+            ) : Array.isArray(messages) && messages.length > 0 ? (
+              <div className="space-y-3">
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <img
+                      src={getAvatar(msg.author_id, currentUser || (user as User | null))}
+                      alt={msg.username}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-[#4fdfff]/50 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-bold text-[#4fdfff]">{msg.username}</span>
+                        <span className="text-[10px] text-white/40 font-mono">
+                          {new Date(msg.created_at).toLocaleTimeString("fr-FR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-white leading-relaxed break-words">{msg.content}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 rounded-full bg-[#4fdfff]/10 border-2 border-[#4fdfff]/30 flex items-center justify-center mb-4">
+                  <span className="text-4xl text-[#4fdfff]">#</span>
+                </div>
+                <h4 className="text-xl font-bold text-white mb-2">
+                  Welcome to #{selectedChannel?.name}
+                </h4>
+                <p className="text-white/40 text-sm">This is the beginning. Send a message!</p>
+              </div>
+            )}
+          </div>
+
+          {selectedChannel && (
+            <footer className="p-[15px] border-t-2 border-[#4fdfff]">
+              <form onSubmit={handleSendMessage}>
+                <input
+                  type="text"
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  placeholder={`Message #${selectedChannel.name}`}
+                  className="w-full p-3 bg-[rgba(31,31,31,0.9)] border-2 border-[#4fdfff] text-white font-bold outline-none rounded-lg placeholder:text-white/50 focus:shadow-[0_0_12px_rgba(79,223,255,0.6)] transition-all duration-300"
+                />
+              </form>
+            </footer>
+>>>>>>> Invite
           )}
         </div>
 
@@ -470,6 +749,7 @@ export default function Home() {
         )}
       </div>
 
+<<<<<<< HEAD
       {/* ========== MEMBERS SIDEBAR (240px) ========== */}
       {selectedServer ? (
         <aside className="w-60 bg-[rgba(5,10,15,0.95)] border-l border-[#4fdfff]/20 flex flex-col">
@@ -568,11 +848,24 @@ export default function Home() {
           <p className="text-white/40 text-sm text-center px-4">Sélectionnez un serveur</p>
         </aside>
       )}
+=======
+      {/* ========== RIGHT SIDEBAR - MEMBERS ========== */}
+      <MemberSidebar
+        selectedServer={selectedServer ?? null}
+        members={members}
+        currentUser={currentUser}
+        authUser={user as User | null}
+        onInviteClick={() => setShowInviteModal(true)}
+      />
+>>>>>>> Invite
 
       {/* ========== MODAL CREATE SERVER ========== */}
       {showCreateServer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCreateServer(false)} />
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowCreateServer(false)}
+          />
           <div className="relative bg-[rgba(20,20,20,0.98)] border-2 border-[#4fdfff] rounded-xl p-6 w-full max-w-md shadow-[0_0_40px_rgba(79,223,255,0.3)]">
             <h2 className="text-xl font-bold text-center text-white mb-1">CREATE SERVER</h2>
             <p className="text-center text-white/50 text-sm mb-6">
@@ -604,6 +897,7 @@ export default function Home() {
                   className="flex-1"
                 >
                   Cancel
+<<<<<<< HEAD
                 </Button>
                 <Button
                   type="submit"
@@ -612,6 +906,10 @@ export default function Home() {
                   disabled={!newServerName.trim()}
                   className="flex-1 uppercase"
                 >
+=======
+                </button>
+                <button type="submit" disabled={!newServerName.trim()} className={actionBtn}>
+>>>>>>> Invite
                   Create
                 </Button>
               </div>
@@ -623,7 +921,10 @@ export default function Home() {
       {/* ========== MODAL CREATE CHANNEL ========== */}
       {showCreateChannel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowCreateChannel(false)} />
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowCreateChannel(false)}
+          />
           <div className="relative bg-[rgba(20,20,20,0.98)] border-2 border-[#4fdfff] rounded-xl p-6 w-full max-w-md shadow-[0_0_40px_rgba(79,223,255,0.3)]">
             <h2 className="text-xl font-bold text-center text-white mb-1">CREATE CHANNEL</h2>
             <p className="text-center text-white/50 text-sm mb-6">
@@ -634,7 +935,9 @@ export default function Home() {
                 CHANNEL NAME
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">#</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">
+                  #
+                </span>
                 <input
                   type="text"
                   value={newChannelName}
@@ -652,6 +955,7 @@ export default function Home() {
                 >
                   Cancel
                 </button>
+<<<<<<< HEAD
                 <Button
                   type="submit"
                   variant="primary"
@@ -659,6 +963,9 @@ export default function Home() {
                   disabled={!newChannelName.trim()}
                   className="flex-1 uppercase"
                 >
+=======
+                <button type="submit" disabled={!newChannelName.trim()} className={actionBtn}>
+>>>>>>> Invite
                   Create
                 </Button>
               </div>
@@ -667,12 +974,20 @@ export default function Home() {
         </div>
       )}
 
-      {/* ========== MODAL PROFILE CARD ========== */}
+      {/* ========== MODAL PROFILE ========== */}
       {showProfile && (currentUser || user) && (
         <ProfileCard
           user={(currentUser || user) as User}
           onClose={() => setShowProfile(false)}
           onUpdate={(updatedUser) => setCurrentUser(updatedUser)}
+        />
+      )}
+
+      {showInviteModal && selectedServer && (
+        <InviteModal
+          serverId={selectedServer.id}
+          serverName={selectedServer.name}
+          onClose={() => setShowInviteModal(false)}
         />
       )}
     </main>

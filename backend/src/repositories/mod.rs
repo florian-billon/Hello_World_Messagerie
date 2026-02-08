@@ -3,7 +3,6 @@ pub mod invite;
 pub mod message;
 pub mod server;
 pub mod user;
-
 pub use channel::ChannelRepository;
 pub use invite::InviteRepository;
 pub use message::MessageRepository;
