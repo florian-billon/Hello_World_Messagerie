@@ -1,4 +1,4 @@
-FROM rust:1.75-slim as builder
+FROM rust:1.84-slim as builder
 
 WORKDIR /app
 
@@ -33,4 +33,3 @@ ENV RUST_LOG=info
 ENV PORT=3001
 
 CMD ["/app/backend"]
-
