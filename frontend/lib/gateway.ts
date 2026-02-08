@@ -78,9 +78,10 @@ export class Gateway {
 
         // Envoyer IDENTIFY après un court délai pour s'assurer que le WebSocket est vraiment prêt
         if (this.token) {
+          const token = this.token; // Capture pour TypeScript
           setTimeout(() => {
             console.log("[Gateway] Sending IDENTIFY, readyState:", this.ws?.readyState);
-            this.send({ op: "IDENTIFY", d: { token: this.token } });
+            this.send({ op: "IDENTIFY", d: { token } });
           }, 100);
         }
       };
