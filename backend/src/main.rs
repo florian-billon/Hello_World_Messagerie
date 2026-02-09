@@ -146,8 +146,8 @@ async fn main() {
         .layer(cors)
         .with_state(state);
 
-    let port = std::env::var("PORT").unwrap_or_else(|_| "3001".to_string());
-    let addr = format!("0.0.0.0:{}", port);
+let port = std::env::var("PORT").unwrap_or_else(|_| "3001".to_string());
+let addr = format!("0.0.0.0:{}", port);    let addr = format!("0.0.0.0:{}", port);
     let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .unwrap_or_else(|_| panic!("Failed to bind to port {}", port));
