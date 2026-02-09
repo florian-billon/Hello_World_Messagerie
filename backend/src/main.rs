@@ -112,10 +112,14 @@ async fn main() {
     };
 
 let cors = CorsLayer::new()
-    // Autorisez votre URL de production Vercel
     .allow_origin("https://hello-world-messagerie-jfk7.vercel.app".parse::<HeaderValue>().unwrap())
-    .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
-    .allow_headers([http::header::CONTENT_TYPE, http::header::AUTHORIZATION]);
+    .allow_methods([Method::GET, Method::POST])
+    .allow_headers([
+        http::header::CONTENT_TYPE, 
+        http::header::AUTHORIZATION,
+        http::header::UPGRADE, // INDISPENSABLE POUR WEBSOCKET
+        http::header::CONNECTION, // INDISPENSABLE POUR WEBSOCKET
+    ]);
     
     let routes_protected = routes::create_router()
         .route(
