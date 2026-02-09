@@ -9,6 +9,7 @@ use mongodb::{Client as MongoClient, Database as MongoDatabase};
 use sqlx::postgres::PgPoolOptions;
 use std::time::Duration;
 use tower_http::cors::{Any, CorsLayer};
+use http::Method;
 
 mod ctx;
 mod error;
@@ -110,11 +111,12 @@ async fn main() {
         ws_metrics,
     };
 
-    let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any);
-
+let cors = CorsLayer::new()
+    // Autorisez votre URL de production Vercel
+    .allow_origin("https://hello-world-messagerie-jfk7.vercel.app".parse::<HeaderValue>().unwrap())
+    .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::DELETE])
+    .allow_headers([http::header::CONTENT_TYPE, http::header::AUTHORIZATION]);
+    
     let routes_protected = routes::create_router()
         .route(
             "/me",
