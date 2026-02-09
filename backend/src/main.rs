@@ -110,15 +110,20 @@ async fn main() {
         ws_hub,
         ws_metrics,
     };
-
 let cors = CorsLayer::new()
     .allow_origin("https://hello-world-messagerie-jfk7.vercel.app".parse::<HeaderValue>().unwrap())
-    .allow_methods([Method::GET, Method::POST])
+    .allow_methods([
+        Method::GET, 
+        Method::POST, 
+        Method::PATCH, 
+        Method::DELETE, 
+        Method::OPTIONS // Très important pour les navigateurs
+    ])
     .allow_headers([
         header::CONTENT_TYPE, 
         header::AUTHORIZATION,
-        header::UPGRADE, // INDISPENSABLE POUR WEBSOCKET
-        header::CONNECTION, // INDISPENSABLE POUR WEBSOCKET
+        header::UPGRADE,
+        header::CONNECTION,
     ]);
     
     let routes_protected = routes::create_router()
