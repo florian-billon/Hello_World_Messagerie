@@ -2,7 +2,7 @@
 
 <img src="frontend/public/logo.png" width="120" alt="Hello World" />
 
-<h1><a href="https://hello-world-messagerie-jfk7.vercel.app">Hello World</a></h1>
+<h1><a href="https://hello-world-messagerie-jfk7.vercel.app">Hello World: https://hello-world-messagerie-jfk7.vercel.app/ </a></h1>
 
 <p><strong>Application de messagerie temps réel inspirée de Discord</strong></p>
 
